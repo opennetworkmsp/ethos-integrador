@@ -1,7 +1,7 @@
 {
   "_versions": {
-    "n8n-webhook": 2,
-    "manage-users": 3,
-    "sendMessage": 1
+    "n8n-webhook": 3,
+    "manage-users": 4,
+    "sendMessage": 2
   }
 }

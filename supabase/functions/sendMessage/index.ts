@@ -71,7 +71,35 @@ Deno.serve(async (req: Request) => {
       throw new Error(`N8N responded with status: ${response.status} - ${responseText}`)
     }
 
-    return new Response(JSON.stringify({ success: true, data: responseText }), {
+    let responseData = null
+    try {
+      responseData = JSON.parse(responseText)
+    } catch (e) {
+      console.warn('N8N response is not JSON:', responseText)
+    }
+
+    if (responseData && Array.isArray(responseData) && responseData.length > 0) {
+      const inserts = responseData.map((item: any) => ({
+        telefone_origem: item.TelefoneOrigem || null,
+        telefone_destino: item.TelefoneDestino || null,
+        organizacao_id: item.OrganizacaoID || null,
+        template_id: item.TemplateId || null,
+        nome_cliente: item.NomeCliente || null,
+        condominio: item.Condominio || null,
+        vencimento: item.Vencimento || null,
+        link_boleto: item.LinkBoleto || null,
+        unidade: item.Unidade || null,
+        user_id: user.id,
+      }))
+
+      const { error: dbError } = await supabaseClient.from('auditoria_mensagens').insert(inserts)
+
+      if (dbError) {
+        console.error('Error saving to auditoria_mensagens:', dbError)
+      }
+    }
+
+    return new Response(JSON.stringify({ success: true, data: responseData || responseText }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
   } catch (error: any) {

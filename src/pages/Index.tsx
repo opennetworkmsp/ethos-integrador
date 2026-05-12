@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { getCondominios, Condominio, triggerN8nWebhook } from '@/services/condominios'
+import { getAuditoriaMensagens, AuditoriaMensagem } from '@/services/auditoria'
 import {
   Table,
   TableBody,
@@ -15,10 +16,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Building, Code2, Loader2, Search, Send } from 'lucide-react'
+import { Building, Code2, Loader2, Search, Send, FileText, ExternalLink } from 'lucide-react'
 import { toast } from 'sonner'
 import {
   Pagination,
@@ -29,6 +30,8 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from '@/components/ui/pagination'
+import { ScrollArea } from '@/components/ui/scroll-area'
+import { Badge } from '@/components/ui/badge'
 
 export default function Index() {
   const [condominios, setCondominios] = useState<Condominio[]>([])
@@ -38,9 +41,14 @@ export default function Index() {
   const [isSending, setIsSending] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
 
-  const ITEMS_PER_PAGE = 10
+  const [showAuditoria, setShowAuditoria] = useState(false)
+  const [auditoriaLogs, setAuditoriaLogs] = useState<AuditoriaMensagem[]>([])
+  const [loadingAuditoria, setLoadingAuditoria] = useState(false)
+  const [auditPage, setAuditPage] = useState(1)
 
-  // Reset pagination when search changes
+  const ITEMS_PER_PAGE = 10
+  const AUDIT_ITEMS_PER_PAGE = 20
+
   useEffect(() => {
     setCurrentPage(1)
   }, [searchTerm])
@@ -61,6 +69,25 @@ export default function Index() {
       setLoading(false)
     }
   }
+
+  const loadAuditoria = async () => {
+    try {
+      setLoadingAuditoria(true)
+      const logs = await getAuditoriaMensagens()
+      setAuditoriaLogs(logs)
+    } catch (error) {
+      console.error(error)
+      toast.error('Erro ao carregar auditoria')
+    } finally {
+      setLoadingAuditoria(false)
+    }
+  }
+
+  useEffect(() => {
+    if (showAuditoria) {
+      loadAuditoria()
+    }
+  }, [showAuditoria])
 
   const filteredCondominios = condominios.filter(
     (c) =>
@@ -105,13 +132,12 @@ export default function Index() {
 
       await triggerN8nWebhook(payload)
 
-      console.log('Dados enviados para o webhook n8n:', selectedCondominio)
-
       toast.success('Webhook disparado com sucesso!', {
-        description: `Os dados do condomínio ${selectedCondominio.nome_condominio} foram enviados para o N8N.`,
+        description: `Os dados do condomínio ${selectedCondominio.nome_condominio} foram enviados para o N8N e os retornos armazenados.`,
       })
 
       setSelectedCondominio(null)
+      if (showAuditoria) loadAuditoria()
     } catch (error) {
       console.error('Erro ao disparar webhook:', error)
       toast.error('Erro ao disparar webhook', {
@@ -124,13 +150,17 @@ export default function Index() {
 
   return (
     <div className="container py-8 max-w-5xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Condomínios</h1>
           <p className="text-muted-foreground mt-1">
             Selecione um condomínio para visualizar os dados e disparar o webhook.
           </p>
         </div>
+        <Button variant="outline" onClick={() => setShowAuditoria(true)}>
+          <FileText className="mr-2 h-4 w-4" />
+          Histórico de Envios
+        </Button>
       </div>
 
       <Card>
@@ -174,7 +204,7 @@ export default function Index() {
                   </TableHeader>
                   <TableBody>
                     {paginatedCondominios.map((condominio) => (
-                      <TableRow key={condominio.id}>
+                      <TableRow key={(condominio as any).id || condominio.id_condominio_interno}>
                         <TableCell className="font-medium">{condominio.nome_condominio}</TableCell>
                         <TableCell>{condominio.id_condominio_interno}</TableCell>
                         <TableCell>{condominio.id_condominio_externo}</TableCell>
@@ -264,10 +294,12 @@ export default function Index() {
                   <p className="text-sm font-medium text-muted-foreground">Condomínio</p>
                   <p className="font-medium">{selectedCondominio.nome_condominio}</p>
                 </div>
-                <div className="space-y-1">
-                  <p className="text-sm font-medium text-muted-foreground">Registro ID</p>
-                  <p className="font-mono text-sm">{selectedCondominio.id}</p>
-                </div>
+                {(selectedCondominio as any).id && (
+                  <div className="space-y-1">
+                    <p className="text-sm font-medium text-muted-foreground">Registro ID</p>
+                    <p className="font-mono text-sm">{(selectedCondominio as any).id}</p>
+                  </div>
+                )}
                 <div className="space-y-1">
                   <p className="text-sm font-medium text-muted-foreground">ID Interno</p>
                   <p className="font-medium">{selectedCondominio.id_condominio_interno}</p>
@@ -326,6 +358,136 @@ export default function Index() {
               </div>
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showAuditoria} onOpenChange={setShowAuditoria}>
+        <DialogContent className="sm:max-w-[900px] max-h-[85vh] flex flex-col">
+          <DialogHeader>
+            <DialogTitle>Histórico de Envios (Auditoria)</DialogTitle>
+            <DialogDescription>
+              Registro de respostas recebidas do N8N após os disparos.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="flex-1 overflow-hidden flex flex-col py-2">
+            {loadingAuditoria ? (
+              <div className="flex flex-1 items-center justify-center min-h-[300px]">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+              </div>
+            ) : auditoriaLogs.length === 0 ? (
+              <div className="flex flex-col flex-1 items-center justify-center min-h-[300px] text-center">
+                <FileText className="h-12 w-12 text-muted-foreground/50 mb-4" />
+                <h3 className="text-lg font-medium">Nenhum registro encontrado</h3>
+                <p className="text-sm text-muted-foreground">Os retornos do N8N aparecerão aqui.</p>
+              </div>
+            ) : (
+              <div className="flex flex-col h-full space-y-4">
+                <div className="rounded-md border flex-1 overflow-hidden flex flex-col min-h-[300px]">
+                  <ScrollArea className="flex-1 h-[400px]">
+                    <Table>
+                      <TableHeader className="sticky top-0 bg-background z-10 shadow-sm">
+                        <TableRow>
+                          <TableHead className="w-[160px]">Data</TableHead>
+                          <TableHead>Cliente</TableHead>
+                          <TableHead>Condomínio</TableHead>
+                          <TableHead>Telefone Destino</TableHead>
+                          <TableHead className="w-[100px] text-right">Boleto</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {auditoriaLogs
+                          .slice(
+                            (auditPage - 1) * AUDIT_ITEMS_PER_PAGE,
+                            auditPage * AUDIT_ITEMS_PER_PAGE,
+                          )
+                          .map((log) => (
+                            <TableRow key={log.id}>
+                              <TableCell className="whitespace-nowrap text-sm text-muted-foreground">
+                                {new Date(log.created_at).toLocaleString('pt-BR')}
+                              </TableCell>
+                              <TableCell className="font-medium text-sm">
+                                {log.nome_cliente || '-'}
+                                {log.unidade && (
+                                  <Badge variant="outline" className="ml-2 text-[10px]">
+                                    Un: {log.unidade}
+                                  </Badge>
+                                )}
+                              </TableCell>
+                              <TableCell
+                                className="text-sm max-w-[200px] truncate"
+                                title={log.condominio || ''}
+                              >
+                                {log.condominio || '-'}
+                              </TableCell>
+                              <TableCell className="text-sm">
+                                {log.telefone_destino || log.telefone_origem || '-'}
+                              </TableCell>
+                              <TableCell className="text-right">
+                                {log.link_boleto ? (
+                                  <Button variant="ghost" size="sm" asChild className="h-8">
+                                    <a
+                                      href={log.link_boleto}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="flex items-center gap-1"
+                                    >
+                                      <ExternalLink className="h-3 w-3" />
+                                      Link
+                                    </a>
+                                  </Button>
+                                ) : (
+                                  <span className="text-muted-foreground text-sm">-</span>
+                                )}
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                      </TableBody>
+                    </Table>
+                  </ScrollArea>
+                </div>
+
+                {auditoriaLogs.length > AUDIT_ITEMS_PER_PAGE && (
+                  <div className="flex justify-between items-center px-2">
+                    <p className="text-sm text-muted-foreground">
+                      Mostrando {(auditPage - 1) * AUDIT_ITEMS_PER_PAGE + 1} até{' '}
+                      {Math.min(auditPage * AUDIT_ITEMS_PER_PAGE, auditoriaLogs.length)} de{' '}
+                      {auditoriaLogs.length}
+                    </p>
+                    <Pagination className="justify-end m-0 w-auto">
+                      <PaginationContent>
+                        <PaginationItem>
+                          <PaginationPrevious
+                            onClick={() => setAuditPage((p) => Math.max(1, p - 1))}
+                            className={
+                              auditPage === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'
+                            }
+                          />
+                        </PaginationItem>
+                        <PaginationItem>
+                          <PaginationNext
+                            onClick={() =>
+                              setAuditPage((p) =>
+                                Math.min(
+                                  Math.ceil(auditoriaLogs.length / AUDIT_ITEMS_PER_PAGE),
+                                  p + 1,
+                                ),
+                              )
+                            }
+                            className={
+                              auditPage >= Math.ceil(auditoriaLogs.length / AUDIT_ITEMS_PER_PAGE)
+                                ? 'pointer-events-none opacity-50'
+                                : 'cursor-pointer'
+                            }
+                          />
+                        </PaginationItem>
+                      </PaginationContent>
+                    </Pagination>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
         </DialogContent>
       </Dialog>
     </div>
