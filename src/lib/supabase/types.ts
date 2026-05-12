@@ -463,14 +463,17 @@ export const Constants = {
 //     WITH CHECK: true
 // Table: profiles
 //   Policy "Admins can delete profiles" (DELETE, PERMISSIVE) roles={authenticated}
-//     USING: (EXISTS ( SELECT 1    FROM profiles p   WHERE ((p.id = auth.uid()) AND (p.role = 'administrador'::text))))
+//     USING: (((auth.jwt() -> 'user_metadata'::text) ->> 'role'::text) = 'administrador'::text)
 //   Policy "Admins can insert profiles" (INSERT, PERMISSIVE) roles={authenticated}
-//     WITH CHECK: (EXISTS ( SELECT 1    FROM profiles p   WHERE ((p.id = auth.uid()) AND (p.role = 'administrador'::text))))
+//     WITH CHECK: (((auth.jwt() -> 'user_metadata'::text) ->> 'role'::text) = 'administrador'::text)
 //   Policy "Admins can update profiles" (UPDATE, PERMISSIVE) roles={authenticated}
-//     USING: (EXISTS ( SELECT 1    FROM profiles p   WHERE ((p.id = auth.uid()) AND (p.role = 'administrador'::text))))
-//     WITH CHECK: (EXISTS ( SELECT 1    FROM profiles p   WHERE ((p.id = auth.uid()) AND (p.role = 'administrador'::text))))
+//     USING: (((auth.jwt() -> 'user_metadata'::text) ->> 'role'::text) = 'administrador'::text)
+//     WITH CHECK: (((auth.jwt() -> 'user_metadata'::text) ->> 'role'::text) = 'administrador'::text)
+//   Policy "Users can update their own profile" (UPDATE, PERMISSIVE) roles={authenticated}
+//     USING: (id = auth.uid())
+//     WITH CHECK: (id = auth.uid())
 //   Policy "Users can view their own profile or admins view all" (SELECT, PERMISSIVE) roles={authenticated}
-//     USING: ((id = auth.uid()) OR (EXISTS ( SELECT 1    FROM profiles p   WHERE ((p.id = auth.uid()) AND (p.role = 'administrador'::text)))))
+//     USING: ((id = auth.uid()) OR (((auth.jwt() -> 'user_metadata'::text) ->> 'role'::text) = 'administrador'::text))
 
 // --- DATABASE FUNCTIONS ---
 // FUNCTION handle_new_user()

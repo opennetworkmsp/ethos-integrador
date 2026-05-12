@@ -98,14 +98,9 @@ export default function Index() {
 
     try {
       const payload = {
-        event: 'trigger_condominio',
-        timestamp: new Date().toISOString(),
-        data: {
-          id: selectedCondominio.id,
-          id_condominio_interno: selectedCondominio.id_condominio_interno,
-          id_condominio_externo: selectedCondominio.id_condominio_externo,
-          nome_condominio: selectedCondominio.nome_condominio,
-        },
+        nome_condominio: selectedCondominio.nome_condominio,
+        id_condominio_interno: selectedCondominio.id_condominio_interno,
+        id_condominio_externo: selectedCondominio.id_condominio_externo,
       }
 
       await triggerN8nWebhook(payload)
@@ -295,14 +290,9 @@ export default function Index() {
                     <code>
                       {JSON.stringify(
                         {
-                          event: 'trigger_condominio',
-                          timestamp: new Date().toISOString(),
-                          data: {
-                            id: selectedCondominio.id,
-                            id_condominio_interno: selectedCondominio.id_condominio_interno,
-                            id_condominio_externo: selectedCondominio.id_condominio_externo,
-                            nome_condominio: selectedCondominio.nome_condominio,
-                          },
+                          nome_condominio: selectedCondominio.nome_condominio,
+                          id_condominio_interno: selectedCondominio.id_condominio_interno,
+                          id_condominio_externo: selectedCondominio.id_condominio_externo,
                         },
                         null,
                         2,

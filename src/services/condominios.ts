@@ -21,7 +21,7 @@ export const getCondominios = async () => {
 }
 
 export const triggerN8nWebhook = async (payload: any) => {
-  const { data, error } = await supabase.functions.invoke('n8n-webhook', {
+  const { data, error } = await supabase.functions.invoke('sendMessage', {
     body: payload,
   })
   if (error) throw error
