@@ -15,11 +15,42 @@ export interface AuditoriaMensagem {
   user_id: string | null
 }
 
-export async function getAuditoriaMensagens(): Promise<AuditoriaMensagem[]> {
-  const { data, error } = await supabase
+export interface AuditoriaFiltros {
+  dataInicio?: string
+  dataFim?: string
+  condominio?: string
+  termoBusca?: string
+}
+
+export async function searchAuditoriaMensagens(
+  filtros: AuditoriaFiltros,
+): Promise<AuditoriaMensagem[]> {
+  let query = supabase
     .from('auditoria_mensagens')
     .select('*')
     .order('created_at', { ascending: false })
+
+  if (filtros.dataInicio) {
+    query = query.gte('created_at', filtros.dataInicio)
+  }
+
+  if (filtros.dataFim) {
+    const endDate = new Date(filtros.dataFim)
+    endDate.setDate(endDate.getDate() + 1)
+    query = query.lt('created_at', endDate.toISOString())
+  }
+
+  if (filtros.condominio) {
+    query = query.ilike('condominio', `%${filtros.condominio}%`)
+  }
+
+  if (filtros.termoBusca) {
+    query = query.or(
+      `nome_cliente.ilike.%${filtros.termoBusca}%,telefone_destino.ilike.%${filtros.termoBusca}%,telefone_origem.ilike.%${filtros.termoBusca}%`,
+    )
+  }
+
+  const { data, error } = await query
 
   if (error) {
     throw error

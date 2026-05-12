@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { getCondominios, Condominio, triggerN8nWebhook } from '@/services/condominios'
-import { getAuditoriaMensagens, AuditoriaMensagem } from '@/services/auditoria'
+import { searchAuditoriaMensagens, AuditoriaMensagem } from '@/services/auditoria'
 import {
   Table,
   TableBody,
@@ -19,6 +19,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import { Building, Code2, Loader2, Search, Send, FileText, ExternalLink } from 'lucide-react'
 import { toast } from 'sonner'
 import {
@@ -46,6 +47,13 @@ export default function Index() {
   const [loadingAuditoria, setLoadingAuditoria] = useState(false)
   const [auditPage, setAuditPage] = useState(1)
 
+  // Filtros de Auditoria
+  const [auditDateStart, setAuditDateStart] = useState('')
+  const [auditDateEnd, setAuditDateEnd] = useState('')
+  const [auditCondominio, setAuditCondominio] = useState('')
+  const [auditSearchTerm, setAuditSearchTerm] = useState('')
+  const [hasSearched, setHasSearched] = useState(false)
+
   const ITEMS_PER_PAGE = 10
   const AUDIT_ITEMS_PER_PAGE = 20
 
@@ -70,24 +78,37 @@ export default function Index() {
     }
   }
 
-  const loadAuditoria = async () => {
+  useEffect(() => {
+    if (!showAuditoria) {
+      setAuditoriaLogs([])
+      setHasSearched(false)
+      setAuditDateStart('')
+      setAuditDateEnd('')
+      setAuditCondominio('')
+      setAuditSearchTerm('')
+      setAuditPage(1)
+    }
+  }, [showAuditoria])
+
+  const handleSearchAuditoria = async () => {
+    setLoadingAuditoria(true)
     try {
-      setLoadingAuditoria(true)
-      const logs = await getAuditoriaMensagens()
+      const logs = await searchAuditoriaMensagens({
+        dataInicio: auditDateStart,
+        dataFim: auditDateEnd,
+        condominio: auditCondominio,
+        termoBusca: auditSearchTerm,
+      })
       setAuditoriaLogs(logs)
+      setHasSearched(true)
+      setAuditPage(1)
     } catch (error) {
       console.error(error)
-      toast.error('Erro ao carregar auditoria')
+      toast.error('Erro ao buscar logs de auditoria')
     } finally {
       setLoadingAuditoria(false)
     }
   }
-
-  useEffect(() => {
-    if (showAuditoria) {
-      loadAuditoria()
-    }
-  }, [showAuditoria])
 
   const filteredCondominios = condominios.filter(
     (c) =>
@@ -133,11 +154,13 @@ export default function Index() {
       await triggerN8nWebhook(payload)
 
       toast.success('Webhook disparado com sucesso!', {
-        description: `Os dados do condomínio ${selectedCondominio.nome_condominio} foram enviados para o N8N e os retornos armazenados.`,
+        description: `Os dados do condomínio ${selectedCondominio.nome_condominio} foram enviados para o N8N.`,
       })
 
       setSelectedCondominio(null)
-      if (showAuditoria) loadAuditoria()
+      if (showAuditoria && hasSearched) {
+        handleSearchAuditoria()
+      }
     } catch (error) {
       console.error('Erro ao disparar webhook:', error)
       toast.error('Erro ao disparar webhook', {
@@ -362,29 +385,106 @@ export default function Index() {
       </Dialog>
 
       <Dialog open={showAuditoria} onOpenChange={setShowAuditoria}>
-        <DialogContent className="sm:max-w-[900px] max-h-[85vh] flex flex-col">
+        <DialogContent className="sm:max-w-[900px] max-h-[90vh] flex flex-col">
           <DialogHeader>
             <DialogTitle>Histórico de Envios (Auditoria)</DialogTitle>
             <DialogDescription>
-              Registro de respostas recebidas do N8N após os disparos.
+              Registro de respostas recebidas do N8N após os disparos. Utilize os filtros para
+              buscar.
             </DialogDescription>
           </DialogHeader>
 
-          <div className="flex-1 overflow-hidden flex flex-col py-2">
-            {loadingAuditoria ? (
-              <div className="flex flex-1 items-center justify-center min-h-[300px]">
+          <div className="space-y-4 py-2 border-b mb-2 shrink-0">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="space-y-1">
+                <Label htmlFor="auditDateStart" className="text-xs">
+                  Data Início
+                </Label>
+                <Input
+                  id="auditDateStart"
+                  type="date"
+                  value={auditDateStart}
+                  onChange={(e) => setAuditDateStart(e.target.value)}
+                  className="h-8 text-sm"
+                />
+              </div>
+              <div className="space-y-1">
+                <Label htmlFor="auditDateEnd" className="text-xs">
+                  Data Fim
+                </Label>
+                <Input
+                  id="auditDateEnd"
+                  type="date"
+                  value={auditDateEnd}
+                  onChange={(e) => setAuditDateEnd(e.target.value)}
+                  className="h-8 text-sm"
+                />
+              </div>
+              <div className="space-y-1">
+                <Label htmlFor="auditCondominio" className="text-xs">
+                  Condomínio
+                </Label>
+                <Input
+                  id="auditCondominio"
+                  placeholder="Ex: Edifício Itália"
+                  value={auditCondominio}
+                  onChange={(e) => setAuditCondominio(e.target.value)}
+                  className="h-8 text-sm"
+                  onKeyDown={(e) => e.key === 'Enter' && handleSearchAuditoria()}
+                />
+              </div>
+              <div className="space-y-1">
+                <Label htmlFor="auditSearchTerm" className="text-xs">
+                  Cliente / Telefone
+                </Label>
+                <Input
+                  id="auditSearchTerm"
+                  placeholder="Nome ou número"
+                  value={auditSearchTerm}
+                  onChange={(e) => setAuditSearchTerm(e.target.value)}
+                  className="h-8 text-sm"
+                  onKeyDown={(e) => e.key === 'Enter' && handleSearchAuditoria()}
+                />
+              </div>
+            </div>
+            <div className="flex justify-end mt-2">
+              <Button onClick={handleSearchAuditoria} disabled={loadingAuditoria} size="sm">
+                {loadingAuditoria ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Search className="mr-2 h-4 w-4" />
+                )}
+                Filtrar Resultados
+              </Button>
+            </div>
+          </div>
+
+          <div className="flex-1 overflow-hidden flex flex-col min-h-[300px]">
+            {!hasSearched ? (
+              <div className="flex flex-col flex-1 items-center justify-center text-center">
+                <Search className="h-12 w-12 text-muted-foreground/50 mb-4" />
+                <h3 className="text-lg font-medium">Faça uma busca</h3>
+                <p className="text-sm text-muted-foreground max-w-[400px]">
+                  Utilize os filtros acima para pesquisar os registros de auditoria retornados pelo
+                  N8N.
+                </p>
+              </div>
+            ) : loadingAuditoria ? (
+              <div className="flex flex-1 items-center justify-center">
                 <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
               </div>
             ) : auditoriaLogs.length === 0 ? (
-              <div className="flex flex-col flex-1 items-center justify-center min-h-[300px] text-center">
+              <div className="flex flex-col flex-1 items-center justify-center text-center">
                 <FileText className="h-12 w-12 text-muted-foreground/50 mb-4" />
                 <h3 className="text-lg font-medium">Nenhum registro encontrado</h3>
-                <p className="text-sm text-muted-foreground">Os retornos do N8N aparecerão aqui.</p>
+                <p className="text-sm text-muted-foreground">
+                  Tente ajustar seus filtros de busca.
+                </p>
               </div>
             ) : (
               <div className="flex flex-col h-full space-y-4">
-                <div className="rounded-md border flex-1 overflow-hidden flex flex-col min-h-[300px]">
-                  <ScrollArea className="flex-1 h-[400px]">
+                <div className="rounded-md border flex-1 overflow-hidden flex flex-col">
+                  <ScrollArea className="flex-1">
                     <Table>
                       <TableHeader className="sticky top-0 bg-background z-10 shadow-sm">
                         <TableRow>

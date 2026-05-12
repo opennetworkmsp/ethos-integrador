@@ -9,6 +9,51 @@ export type Database = {
   }
   public: {
     Tables: {
+      auditoria_mensagens: {
+        Row: {
+          condominio: string | null
+          created_at: string
+          id: string
+          link_boleto: string | null
+          nome_cliente: string | null
+          organizacao_id: string | null
+          telefone_destino: string | null
+          telefone_origem: string | null
+          template_id: string | null
+          unidade: string | null
+          user_id: string | null
+          vencimento: string | null
+        }
+        Insert: {
+          condominio?: string | null
+          created_at?: string
+          id?: string
+          link_boleto?: string | null
+          nome_cliente?: string | null
+          organizacao_id?: string | null
+          telefone_destino?: string | null
+          telefone_origem?: string | null
+          template_id?: string | null
+          unidade?: string | null
+          user_id?: string | null
+          vencimento?: string | null
+        }
+        Update: {
+          condominio?: string | null
+          created_at?: string
+          id?: string
+          link_boleto?: string | null
+          nome_cliente?: string | null
+          organizacao_id?: string | null
+          telefone_destino?: string | null
+          telefone_origem?: string | null
+          template_id?: string | null
+          unidade?: string | null
+          user_id?: string | null
+          vencimento?: string | null
+        }
+        Relationships: []
+      }
       condominios: {
         Row: {
           id_condominio_externo: string
@@ -363,6 +408,19 @@ export const Constants = {
 //   IDLead ChatWoot: text (nullable)
 //   InboxID ChatWoot: text (nullable)
 //   id_conversa: bigint (not null)
+// Table: auditoria_mensagens
+//   id: uuid (not null, default: gen_random_uuid())
+//   telefone_origem: text (nullable)
+//   telefone_destino: text (nullable)
+//   organizacao_id: text (nullable)
+//   template_id: text (nullable)
+//   nome_cliente: text (nullable)
+//   condominio: text (nullable)
+//   vencimento: text (nullable)
+//   link_boleto: text (nullable)
+//   unidade: text (nullable)
+//   created_at: timestamp with time zone (not null, default: now())
+//   user_id: uuid (nullable)
 // Table: condominios
 //   id_condominio_interno: text (not null)
 //   id_condominio_externo: text (not null)
@@ -397,6 +455,9 @@ export const Constants = {
 // --- CONSTRAINTS ---
 // Table: CRM_geral
 //   PRIMARY KEY CRM_geral_pkey: PRIMARY KEY (id_conversa)
+// Table: auditoria_mensagens
+//   PRIMARY KEY auditoria_mensagens_pkey: PRIMARY KEY (id)
+//   FOREIGN KEY auditoria_mensagens_user_id_fkey: FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE SET NULL
 // Table: condominios
 //   PRIMARY KEY condominios_pkey: PRIMARY KEY (id_condominio_interno)
 // Table: convencoes_chunks
@@ -421,6 +482,11 @@ export const Constants = {
 //   Policy "authenticated_update_crm" (UPDATE, PERMISSIVE) roles={authenticated}
 //     USING: true
 //     WITH CHECK: true
+// Table: auditoria_mensagens
+//   Policy "authenticated_insert_auditoria" (INSERT, PERMISSIVE) roles={authenticated}
+//     WITH CHECK: true
+//   Policy "authenticated_select_auditoria" (SELECT, PERMISSIVE) roles={authenticated}
+//     USING: true
 // Table: condominios
 //   Policy "authenticated_delete_condominios" (DELETE, PERMISSIVE) roles={authenticated}
 //     USING: true
