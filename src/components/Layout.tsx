@@ -1,6 +1,6 @@
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/hooks/use-auth'
-import { Building2, LogOut, Users, Home } from 'lucide-react'
+import { Building2, LogOut, Users, Home, User } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Separator } from '@/components/ui/separator'
@@ -124,6 +124,13 @@ export default function Layout() {
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
+              <DropdownMenuItem asChild className="cursor-pointer">
+                <Link to="/perfil" className="flex items-center w-full">
+                  <User className="mr-2 h-4 w-4" />
+                  <span>Meu Perfil</span>
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
               <DropdownMenuItem
                 onClick={handleSignOut}
                 className="text-destructive focus:bg-destructive focus:text-destructive-foreground cursor-pointer"
@@ -145,7 +152,9 @@ export default function Layout() {
               ? 'Condomínios'
               : location.pathname === '/usuarios'
                 ? 'Gestão de Usuários'
-                : ''}
+                : location.pathname === '/perfil'
+                  ? 'Meu Perfil'
+                  : ''}
           </h1>
         </header>
         <main className="flex-1 p-4 lg:p-6 overflow-auto">

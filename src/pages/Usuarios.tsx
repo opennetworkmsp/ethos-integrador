@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { getProfiles, manageUser, updateProfileRole } from '@/services/users'
+import { getProfiles, manageUser } from '@/services/users'
 import { useAuth, Profile } from '@/hooks/use-auth'
 import {
   Table,
@@ -10,33 +10,20 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Label } from '@/components/ui/label'
+import { UserFormDialog } from '@/components/UserFormDialog'
 import { toast } from 'sonner'
-import { Loader2, Plus, ShieldAlert, Trash2, User as UserIcon } from 'lucide-react'
+import { Loader2, Plus, ShieldAlert, Trash2, User as UserIcon, Edit } from 'lucide-react'
 
 export default function Usuarios() {
   const [profiles, setProfiles] = useState<Profile[]>([])
   const [loading, setLoading] = useState(true)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [dialogMode, setDialogMode] = useState<'create' | 'edit'>('create')
+  const [editingId, setEditingId] = useState<string | null>(null)
+
   const { user: currentUser } = useAuth()
 
   const [formData, setFormData] = useState({
@@ -63,20 +50,47 @@ export default function Usuarios() {
     }
   }
 
-  const handleCreateUser = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const handleOpenCreate = () => {
+    setDialogMode('create')
+    setFormData({ email: '', password: '', full_name: '', role: 'usuario' })
+    setIsDialogOpen(true)
+  }
+
+  const handleOpenEdit = (profile: Profile) => {
+    setDialogMode('edit')
+    setEditingId(profile.id)
+    setFormData({
+      email: profile.email,
+      password: '',
+      full_name: profile.full_name || '',
+      role: profile.role,
+    })
+    setIsDialogOpen(true)
+  }
+
+  const handleSubmit = async (data: any) => {
     setIsSubmitting(true)
     try {
-      await manageUser({
-        action: 'create',
-        ...formData,
-      })
-      toast.success('Usuário criado com sucesso')
+      if (dialogMode === 'create') {
+        await manageUser({ action: 'create', ...data })
+        toast.success('Usuário criado com sucesso')
+      } else {
+        await manageUser({
+          action: 'update',
+          id: editingId,
+          email: data.email,
+          full_name: data.full_name,
+          role: data.role,
+          ...(data.password ? { password: data.password } : {}),
+        })
+        toast.success('Usuário atualizado com sucesso')
+      }
       setIsDialogOpen(false)
-      setFormData({ email: '', password: '', full_name: '', role: 'usuario' })
       loadProfiles()
     } catch (error: any) {
-      toast.error('Erro ao criar usuário', { description: error.message })
+      toast.error(dialogMode === 'create' ? 'Erro ao criar usuário' : 'Erro ao atualizar usuário', {
+        description: error.message,
+      })
     } finally {
       setIsSubmitting(false)
     }
@@ -94,16 +108,6 @@ export default function Usuarios() {
     }
   }
 
-  const handleRoleChange = async (id: string, newRole: string) => {
-    try {
-      await updateProfileRole(id, newRole)
-      toast.success('Perfil atualizado com sucesso')
-      loadProfiles()
-    } catch (error: any) {
-      toast.error('Erro ao atualizar perfil')
-    }
-  }
-
   return (
     <div className="container py-8 max-w-5xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -114,82 +118,20 @@ export default function Usuarios() {
           </p>
         </div>
 
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="mr-2 h-4 w-4" />
-              Novo Usuário
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Criar Novo Usuário</DialogTitle>
-              <DialogDescription>
-                Adicione um novo usuário ao sistema. Ele poderá fazer login imediatamente.
-              </DialogDescription>
-            </DialogHeader>
-            <form onSubmit={handleCreateUser} className="space-y-4 pt-4">
-              <div className="space-y-2">
-                <Label htmlFor="full_name">Nome Completo</Label>
-                <Input
-                  id="full_name"
-                  value={formData.full_name}
-                  onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="email">E-mail</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="password">Senha Temporária</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  value={formData.password}
-                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                  required
-                  minLength={6}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="role">Perfil de Acesso</Label>
-                <Select
-                  value={formData.role}
-                  onValueChange={(value) => setFormData({ ...formData, role: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione um perfil" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="usuario">Usuário Padrão</SelectItem>
-                    <SelectItem value="administrador">Administrador</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="flex justify-end pt-4">
-                <Button type="submit" disabled={isSubmitting}>
-                  {isSubmitting ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Salvando...
-                    </>
-                  ) : (
-                    'Criar Usuário'
-                  )}
-                </Button>
-              </div>
-            </form>
-          </DialogContent>
-        </Dialog>
+        <Button onClick={handleOpenCreate}>
+          <Plus className="mr-2 h-4 w-4" />
+          Novo Usuário
+        </Button>
       </div>
+
+      <UserFormDialog
+        open={isDialogOpen}
+        onOpenChange={setIsDialogOpen}
+        mode={dialogMode}
+        initialData={formData}
+        onSubmit={handleSubmit}
+        isSubmitting={isSubmitting}
+      />
 
       <Card>
         <CardHeader>
@@ -229,33 +171,24 @@ export default function Usuarios() {
                       </TableCell>
                       <TableCell>{profile.email}</TableCell>
                       <TableCell>
-                        {profile.id === currentUser?.id ? (
-                          <Badge
-                            variant={profile.role === 'administrador' ? 'default' : 'secondary'}
-                          >
-                            {profile.role === 'administrador' ? (
-                              <ShieldAlert className="mr-1 h-3 w-3" />
-                            ) : (
-                              <UserIcon className="mr-1 h-3 w-3" />
-                            )}
-                            {profile.role}
-                          </Badge>
-                        ) : (
-                          <Select
-                            defaultValue={profile.role}
-                            onValueChange={(val) => handleRoleChange(profile.id, val)}
-                          >
-                            <SelectTrigger className="w-[140px] h-8">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="usuario">Usuário</SelectItem>
-                              <SelectItem value="administrador">Administrador</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        )}
+                        <Badge variant={profile.role === 'administrador' ? 'default' : 'secondary'}>
+                          {profile.role === 'administrador' ? (
+                            <ShieldAlert className="mr-1 h-3 w-3" />
+                          ) : (
+                            <UserIcon className="mr-1 h-3 w-3" />
+                          )}
+                          {profile.role}
+                        </Badge>
                       </TableCell>
-                      <TableCell className="text-right">
+                      <TableCell className="text-right space-x-2">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleOpenEdit(profile)}
+                          title="Editar usuário"
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
                         {profile.id !== currentUser?.id && (
                           <Button
                             variant="ghost"

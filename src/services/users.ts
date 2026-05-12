@@ -7,12 +7,6 @@ export const getProfiles = async () => {
   return data as Profile[]
 }
 
-export const updateProfileRole = async (id: string, role: string) => {
-  const { data, error } = await supabase.from('profiles').update({ role }).eq('id', id)
-  if (error) throw error
-  return data
-}
-
 export const manageUser = async (payload: any) => {
   const { data, error } = await supabase.functions.invoke('manage-users', {
     body: payload,

@@ -31,6 +31,30 @@ Deno.serve(async (req: Request) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
     )
 
+    const payload = await req.json()
+    const { action } = payload
+
+    if (action === 'update-profile') {
+      const { full_name, password } = payload
+
+      if (password) {
+        const { error } = await supabaseAdmin.auth.admin.updateUserById(user.id, { password })
+        if (error) throw error
+      }
+
+      if (full_name) {
+        const { error: profileError } = await supabaseAdmin
+          .from('profiles')
+          .update({ full_name })
+          .eq('id', user.id)
+        if (profileError) throw profileError
+      }
+
+      return new Response(JSON.stringify({ success: true }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+
     const { data: profile } = await supabaseAdmin
       .from('profiles')
       .select('role')
@@ -39,9 +63,6 @@ Deno.serve(async (req: Request) => {
     if (profile?.role !== 'administrador') {
       throw new Error('Forbidden: Only admins can manage users')
     }
-
-    const payload = await req.json()
-    const { action } = payload
 
     if (action === 'create') {
       const { email, password, full_name, role } = payload
@@ -53,6 +74,40 @@ Deno.serve(async (req: Request) => {
       })
       if (error) throw error
       return new Response(JSON.stringify({ success: true, user: newUser }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+
+    if (action === 'update') {
+      const { id, email, password, full_name, role } = payload
+      const updateData: any = {}
+      if (email) updateData.email = email
+      if (password) updateData.password = password
+      if (full_name !== undefined || role !== undefined) {
+        updateData.user_metadata = {
+          ...(full_name !== undefined && { full_name }),
+          ...(role !== undefined && { role }),
+        }
+      }
+
+      const { data: updatedUser, error } = await supabaseAdmin.auth.admin.updateUserById(
+        id,
+        updateData,
+      )
+      if (error) throw error
+
+      const profileUpdate: any = {}
+      if (full_name !== undefined) profileUpdate.full_name = full_name
+      if (role !== undefined) profileUpdate.role = role
+      if (email !== undefined) profileUpdate.email = email
+
+      const { error: profileError } = await supabaseAdmin
+        .from('profiles')
+        .update(profileUpdate)
+        .eq('id', id)
+      if (profileError) throw profileError
+
+      return new Response(JSON.stringify({ success: true, user: updatedUser }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })
     }
