@@ -153,7 +153,7 @@ export default function Index() {
 
       await triggerN8nWebhook(payload)
 
-      toast.success('Webhook disparado com sucesso!', {
+      toast.success('Registro disparado com sucesso!', {
         description: `Os dados do condomínio ${selectedCondominio.nome_condominio} foram enviados para o N8N.`,
       })
 
@@ -162,8 +162,8 @@ export default function Index() {
         handleSearchAuditoria()
       }
     } catch (error) {
-      console.error('Erro ao disparar webhook:', error)
-      toast.error('Erro ao disparar webhook', {
+      console.error('Erro ao disparar Eventos:', error)
+      toast.error('Erro ao disparar Eventos', {
         description: 'Ocorreu um erro ao enviar os dados para o servidor.',
       })
     } finally {
@@ -177,7 +177,7 @@ export default function Index() {
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Condomínios</h1>
           <p className="text-muted-foreground mt-1">
-            Selecione um condomínio para visualizar os dados e disparar o webhook.
+            Selecione um condomínio para visualizar os dados e disparar o evento.
           </p>
         </div>
         <Button variant="outline" onClick={() => setShowAuditoria(true)}>
