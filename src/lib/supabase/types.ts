@@ -162,6 +162,27 @@ export type Database = {
         }
         Relationships: []
       }
+      profiles: {
+        Row: {
+          email: string
+          full_name: string | null
+          id: string
+          role: string
+        }
+        Insert: {
+          email: string
+          full_name?: string | null
+          id: string
+          role?: string
+        }
+        Update: {
+          email?: string
+          full_name?: string | null
+          id?: string
+          role?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       inventario_condominios: {
@@ -367,6 +388,11 @@ export const Constants = {
 //   id: integer (not null, default: nextval('n8n_chat_histories_id_seq'::regclass))
 //   session_id: character varying (not null)
 //   message: jsonb (not null)
+// Table: profiles
+//   id: uuid (not null)
+//   email: text (not null)
+//   role: text (not null, default: 'usuario'::text)
+//   full_name: text (nullable)
 
 // --- CONSTRAINTS ---
 // Table: CRM_geral
@@ -379,6 +405,10 @@ export const Constants = {
 //   PRIMARY KEY historico_infracoes_pkey: PRIMARY KEY (id)
 // Table: n8n_chat_histories
 //   PRIMARY KEY n8n_chat_histories_pkey: PRIMARY KEY (id)
+// Table: profiles
+//   FOREIGN KEY profiles_id_fkey: FOREIGN KEY (id) REFERENCES auth.users(id) ON DELETE CASCADE
+//   PRIMARY KEY profiles_pkey: PRIMARY KEY (id)
+//   CHECK profiles_role_check: CHECK ((role = ANY (ARRAY['usuario'::text, 'administrador'::text])))
 
 // --- ROW LEVEL SECURITY POLICIES ---
 // Table: CRM_geral
@@ -431,8 +461,37 @@ export const Constants = {
 //   Policy "authenticated_update_n8n" (UPDATE, PERMISSIVE) roles={authenticated}
 //     USING: true
 //     WITH CHECK: true
+// Table: profiles
+//   Policy "Admins can delete profiles" (DELETE, PERMISSIVE) roles={authenticated}
+//     USING: (EXISTS ( SELECT 1    FROM profiles p   WHERE ((p.id = auth.uid()) AND (p.role = 'administrador'::text))))
+//   Policy "Admins can insert profiles" (INSERT, PERMISSIVE) roles={authenticated}
+//     WITH CHECK: (EXISTS ( SELECT 1    FROM profiles p   WHERE ((p.id = auth.uid()) AND (p.role = 'administrador'::text))))
+//   Policy "Admins can update profiles" (UPDATE, PERMISSIVE) roles={authenticated}
+//     USING: (EXISTS ( SELECT 1    FROM profiles p   WHERE ((p.id = auth.uid()) AND (p.role = 'administrador'::text))))
+//     WITH CHECK: (EXISTS ( SELECT 1    FROM profiles p   WHERE ((p.id = auth.uid()) AND (p.role = 'administrador'::text))))
+//   Policy "Users can view their own profile or admins view all" (SELECT, PERMISSIVE) roles={authenticated}
+//     USING: ((id = auth.uid()) OR (EXISTS ( SELECT 1    FROM profiles p   WHERE ((p.id = auth.uid()) AND (p.role = 'administrador'::text)))))
 
 // --- DATABASE FUNCTIONS ---
+// FUNCTION handle_new_user()
+//   CREATE OR REPLACE FUNCTION public.handle_new_user()
+//    RETURNS trigger
+//    LANGUAGE plpgsql
+//    SECURITY DEFINER
+//   AS $function$
+//   BEGIN
+//     INSERT INTO public.profiles (id, email, full_name, role)
+//     VALUES (
+//       NEW.id,
+//       NEW.email,
+//       COALESCE(NEW.raw_user_meta_data->>'full_name', ''),
+//       COALESCE(NEW.raw_user_meta_data->>'role', 'usuario')
+//     )
+//     ON CONFLICT (id) DO NOTHING;
+//     RETURN NEW;
+//   END;
+//   $function$
+//
 // FUNCTION match_documents(vector, integer, jsonb)
 //   CREATE OR REPLACE FUNCTION public.match_documents(query_embedding vector, match_count integer DEFAULT NULL::integer, filter jsonb DEFAULT '{}'::jsonb)
 //    RETURNS TABLE(id bigint, content text, metadata jsonb, similarity double precision)

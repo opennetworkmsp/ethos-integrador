@@ -1,7 +1,33 @@
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/hooks/use-auth'
+import { Building2, LogOut, Users, Home } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Building2, LogOut } from 'lucide-react'
+import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import { Separator } from '@/components/ui/separator'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarProvider,
+  SidebarRail,
+  SidebarTrigger,
+  SidebarInset,
+} from '@/components/ui/sidebar'
 
 export default function Layout() {
   const { user, profile, signOut } = useAuth()
@@ -13,56 +39,119 @@ export default function Layout() {
     navigate('/login')
   }
 
+  if (!user) {
+    return (
+      <div className="flex min-h-screen flex-col bg-background">
+        <main className="flex-1">
+          <Outlet />
+        </main>
+      </div>
+    )
+  }
+
   return (
-    <div className="flex min-h-screen flex-col bg-background">
-      {user && (
-        <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-          <div className="container flex h-14 items-center justify-between">
-            <div className="flex items-center gap-6">
-              <Link to="/" className="flex items-center gap-2 font-semibold">
-                <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary text-primary-foreground">
-                  <Building2 className="h-5 w-5" />
+    <SidebarProvider>
+      <Sidebar>
+        <SidebarHeader className="border-b p-4">
+          <Link to="/" className="flex items-center gap-3 font-semibold px-2">
+            <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary text-primary-foreground">
+              <Building2 className="h-5 w-5" />
+            </div>
+            <span className="text-lg">Ethos API</span>
+          </Link>
+        </SidebarHeader>
+        <SidebarContent>
+          <SidebarGroup>
+            <SidebarGroupLabel>Operações</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild isActive={location.pathname === '/'}>
+                    <Link to="/">
+                      <Home className="h-4 w-4" />
+                      <span>Condomínios</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+
+          {profile?.role === 'administrador' && (
+            <SidebarGroup>
+              <SidebarGroupLabel>Administração</SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton asChild isActive={location.pathname === '/usuarios'}>
+                      <Link to="/usuarios">
+                        <Users className="h-4 w-4" />
+                        <span>Gestão de Usuários</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+          )}
+        </SidebarContent>
+        <SidebarFooter className="border-t p-4">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="w-full justify-start gap-3 h-auto py-2 px-2">
+                <Avatar className="h-8 w-8">
+                  <AvatarFallback className="bg-primary/10 text-primary font-medium">
+                    {(profile?.full_name || user.email)?.charAt(0).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex flex-col items-start text-sm truncate flex-1">
+                  <span className="font-medium truncate w-full">
+                    {profile?.full_name || 'Usuário'}
+                  </span>
+                  <span className="text-xs text-muted-foreground truncate w-full">
+                    {user.email}
+                  </span>
                 </div>
-                <span className="hidden sm:inline-block">Ethos API</span>
-              </Link>
-
-              <nav className="hidden md:flex items-center gap-4 text-sm font-medium">
-                <Link
-                  to="/"
-                  className={`transition-colors hover:text-foreground/80 ${
-                    location.pathname === '/' ? 'text-foreground' : 'text-foreground/60'
-                  }`}
-                >
-                  Condomínios
-                </Link>
-                {profile?.role === 'administrador' && (
-                  <Link
-                    to="/usuarios"
-                    className={`transition-colors hover:text-foreground/80 ${
-                      location.pathname === '/usuarios' ? 'text-foreground' : 'text-foreground/60'
-                    }`}
-                  >
-                    Usuários
-                  </Link>
-                )}
-              </nav>
-            </div>
-
-            <div className="flex items-center gap-4">
-              <span className="text-sm text-muted-foreground hidden md:inline-block font-medium">
-                {profile?.full_name || user.email}
-              </span>
-              <Button variant="ghost" size="sm" onClick={handleSignOut} className="gap-2">
-                <LogOut className="h-4 w-4" />
-                <span className="hidden sm:inline-block">Sair</span>
               </Button>
-            </div>
-          </div>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56 mb-2">
+              <DropdownMenuLabel className="font-normal">
+                <div className="flex flex-col space-y-1">
+                  <p className="text-sm font-medium leading-none">
+                    {profile?.full_name || 'Usuário'}
+                  </p>
+                  <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
+                </div>
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={handleSignOut}
+                className="text-destructive focus:bg-destructive focus:text-destructive-foreground cursor-pointer"
+              >
+                <LogOut className="mr-2 h-4 w-4" />
+                <span>Sair do sistema</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </SidebarFooter>
+        <SidebarRail />
+      </Sidebar>
+      <SidebarInset>
+        <header className="flex h-14 shrink-0 items-center gap-2 border-b bg-background px-4">
+          <SidebarTrigger className="-ml-1" />
+          <Separator orientation="vertical" className="h-6 mx-2" />
+          <h1 className="text-lg font-semibold">
+            {location.pathname === '/'
+              ? 'Condomínios'
+              : location.pathname === '/usuarios'
+                ? 'Gestão de Usuários'
+                : ''}
+          </h1>
         </header>
-      )}
-      <main className="flex-1">
-        <Outlet />
-      </main>
-    </div>
+        <main className="flex-1 p-4 lg:p-6 overflow-auto">
+          <Outlet />
+        </main>
+      </SidebarInset>
+    </SidebarProvider>
   )
 }
