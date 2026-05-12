@@ -57,7 +57,7 @@ export default function Layout() {
             <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary text-primary-foreground">
               <Building2 className="h-5 w-5" />
             </div>
-            <span className="text-lg">Ethos API</span>
+            <span className="text-lg">Ethos | Integração de Sistemas</span>
           </Link>
         </SidebarHeader>
         <SidebarContent>
