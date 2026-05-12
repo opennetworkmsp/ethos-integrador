@@ -385,8 +385,7 @@ export default function Index() {
           <DialogHeader>
             <DialogTitle>Histórico de Envios (Auditoria)</DialogTitle>
             <DialogDescription>
-              Registro de respostas recebidas do N8N após os disparos. Utilize os filtros para
-              buscar.
+              Registro de respostas recebidas após os disparos. Utilize os filtros para buscar.
             </DialogDescription>
           </DialogHeader>
 
