@@ -304,10 +304,8 @@ export default function Index() {
       >
         <DialogContent className="sm:max-w-[600px]">
           <DialogHeader>
-            <DialogTitle>Detalhes para Disparo (N8N)</DialogTitle>
-            <DialogDescription>
-              Revise os dados antes de enviar a requisição para o fluxo do N8N.
-            </DialogDescription>
+            <DialogTitle>Detalhes para Disparo</DialogTitle>
+            <DialogDescription>Revise os dados antes de disparar o evento</DialogDescription>
           </DialogHeader>
 
           {selectedCondominio && (
@@ -336,9 +334,7 @@ export default function Index() {
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
                   <Code2 className="h-4 w-4 text-muted-foreground" />
-                  <p className="text-sm font-medium text-muted-foreground">
-                    Payload do Webhook (JSON)
-                  </p>
+                  <p className="text-sm font-medium text-muted-foreground">Dados Técnicos</p>
                 </div>
                 <div className="rounded-md bg-muted p-4">
                   <pre className="text-sm text-foreground overflow-x-auto">
