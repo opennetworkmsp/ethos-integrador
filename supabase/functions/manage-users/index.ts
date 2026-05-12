@@ -37,12 +37,18 @@ Deno.serve(async (req: Request) => {
     if (action === 'update-profile') {
       const { full_name, password } = payload
 
-      if (password) {
-        const { error } = await supabaseAdmin.auth.admin.updateUserById(user.id, { password })
+      const updateData: any = {}
+      if (password) updateData.password = password
+      if (full_name !== undefined) {
+        updateData.user_metadata = { full_name }
+      }
+
+      if (Object.keys(updateData).length > 0) {
+        const { error } = await supabaseAdmin.auth.admin.updateUserById(user.id, updateData)
         if (error) throw error
       }
 
-      if (full_name) {
+      if (full_name !== undefined) {
         const { error: profileError } = await supabaseAdmin
           .from('profiles')
           .update({ full_name })
@@ -83,11 +89,13 @@ Deno.serve(async (req: Request) => {
       const updateData: any = {}
       if (email) updateData.email = email
       if (password) updateData.password = password
-      if (full_name !== undefined || role !== undefined) {
-        updateData.user_metadata = {
-          ...(full_name !== undefined && { full_name }),
-          ...(role !== undefined && { role }),
-        }
+
+      const metaUpdate: any = {}
+      if (full_name !== undefined) metaUpdate.full_name = full_name
+      if (role !== undefined) metaUpdate.role = role
+
+      if (Object.keys(metaUpdate).length > 0) {
+        updateData.user_metadata = metaUpdate
       }
 
       const { data: updatedUser, error } = await supabaseAdmin.auth.admin.updateUserById(

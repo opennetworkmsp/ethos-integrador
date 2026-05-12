@@ -77,7 +77,7 @@ export default function Layout() {
             </SidebarGroupContent>
           </SidebarGroup>
 
-          {profile?.role === 'administrador' && (
+          {(profile?.role === 'administrador' || user?.user_metadata?.role === 'administrador') && (
             <SidebarGroup>
               <SidebarGroupLabel>Administração</SidebarGroupLabel>
               <SidebarGroupContent>
