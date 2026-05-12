@@ -7,6 +7,7 @@ import { ProtectedRoute } from '@/components/ProtectedRoute'
 import Index from './pages/Index'
 import Login from './pages/Login'
 import NotFound from './pages/NotFound'
+import Usuarios from './pages/Usuarios'
 import Layout from './components/Layout'
 
 const App = () => (
@@ -21,6 +22,10 @@ const App = () => (
 
             <Route element={<ProtectedRoute />}>
               <Route path="/" element={<Index />} />
+            </Route>
+
+            <Route element={<ProtectedRoute adminOnly />}>
+              <Route path="/usuarios" element={<Usuarios />} />
             </Route>
           </Route>
           <Route path="*" element={<NotFound />} />
