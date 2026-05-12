@@ -9,6 +9,24 @@ export type Database = {
   }
   public: {
     Tables: {
+      condominios: {
+        Row: {
+          id_condominio_externo: string
+          id_condominio_interno: string
+          nome_condominio: string
+        }
+        Insert: {
+          id_condominio_externo: string
+          id_condominio_interno: string
+          nome_condominio: string
+        }
+        Update: {
+          id_condominio_externo?: string
+          id_condominio_interno?: string
+          nome_condominio?: string
+        }
+        Relationships: []
+      }
       convencoes_chunks: {
         Row: {
           content: string | null
@@ -324,6 +342,10 @@ export const Constants = {
 //   IDLead ChatWoot: text (nullable)
 //   InboxID ChatWoot: text (nullable)
 //   id_conversa: bigint (not null)
+// Table: condominios
+//   id_condominio_interno: text (not null)
+//   id_condominio_externo: text (not null)
+//   nome_condominio: text (not null)
 // Table: convencoes_chunks
 //   id: bigint (not null, default: nextval('convencoes_chunks_id_seq'::regclass))
 //   content: text (nullable)
@@ -349,6 +371,8 @@ export const Constants = {
 // --- CONSTRAINTS ---
 // Table: CRM_geral
 //   PRIMARY KEY CRM_geral_pkey: PRIMARY KEY (id_conversa)
+// Table: condominios
+//   PRIMARY KEY condominios_pkey: PRIMARY KEY (id_condominio_interno)
 // Table: convencoes_chunks
 //   PRIMARY KEY convencoes_chunks_pkey: PRIMARY KEY (id)
 // Table: historico_infracoes
@@ -365,6 +389,16 @@ export const Constants = {
 //   Policy "authenticated_select_crm" (SELECT, PERMISSIVE) roles={authenticated}
 //     USING: true
 //   Policy "authenticated_update_crm" (UPDATE, PERMISSIVE) roles={authenticated}
+//     USING: true
+//     WITH CHECK: true
+// Table: condominios
+//   Policy "authenticated_delete_condominios" (DELETE, PERMISSIVE) roles={authenticated}
+//     USING: true
+//   Policy "authenticated_insert_condominios" (INSERT, PERMISSIVE) roles={authenticated}
+//     WITH CHECK: true
+//   Policy "authenticated_select_condominios" (SELECT, PERMISSIVE) roles={authenticated}
+//     USING: true
+//   Policy "authenticated_update_condominios" (UPDATE, PERMISSIVE) roles={authenticated}
 //     USING: true
 //     WITH CHECK: true
 // Table: convencoes_chunks

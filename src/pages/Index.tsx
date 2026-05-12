@@ -20,6 +20,15 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Building, Code2, Loader2, Search, Send } from 'lucide-react'
 import { toast } from 'sonner'
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from '@/components/ui/pagination'
 
 export default function Index() {
   const [condominios, setCondominios] = useState<Condominio[]>([])
@@ -27,6 +36,14 @@ export default function Index() {
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCondominio, setSelectedCondominio] = useState<Condominio | null>(null)
   const [isSending, setIsSending] = useState(false)
+  const [currentPage, setCurrentPage] = useState(1)
+
+  const ITEMS_PER_PAGE = 10
+
+  // Reset pagination when search changes
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [searchTerm])
 
   useEffect(() => {
     loadCondominios()
@@ -48,8 +65,31 @@ export default function Index() {
   const filteredCondominios = condominios.filter(
     (c) =>
       c.nome_condominio.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      c.id_condominio_interno.toLowerCase().includes(searchTerm.toLowerCase()),
+      (c.id_condominio_interno || '').toString().toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (c.id_condominio_externo || '').toString().toLowerCase().includes(searchTerm.toLowerCase()),
   )
+
+  const totalPages = Math.ceil(filteredCondominios.length / ITEMS_PER_PAGE)
+  const paginatedCondominios = filteredCondominios.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE,
+  )
+
+  const getPageNumbers = () => {
+    const pages: (number | string)[] = []
+    if (totalPages <= 7) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i)
+    } else {
+      if (currentPage <= 3) {
+        pages.push(1, 2, 3, 4, '...', totalPages)
+      } else if (currentPage >= totalPages - 2) {
+        pages.push(1, '...', totalPages - 3, totalPages - 2, totalPages - 1, totalPages)
+      } else {
+        pages.push(1, '...', currentPage - 1, currentPage, currentPage + 1, '...', totalPages)
+      }
+    }
+    return pages
+  }
 
   const handleTriggerWebhook = async () => {
     if (!selectedCondominio) return
@@ -126,35 +166,85 @@ export default function Index() {
               <p className="text-sm text-muted-foreground">Tente ajustar seus filtros de busca.</p>
             </div>
           ) : (
-            <div className="rounded-md border">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Nome do Condomínio</TableHead>
-                    <TableHead>ID Interno</TableHead>
-                    <TableHead>ID Externo</TableHead>
-                    <TableHead className="text-right">Ações</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredCondominios.map((condominio) => (
-                    <TableRow key={condominio.id}>
-                      <TableCell className="font-medium">{condominio.nome_condominio}</TableCell>
-                      <TableCell>{condominio.id_condominio_interno}</TableCell>
-                      <TableCell>{condominio.id_condominio_externo}</TableCell>
-                      <TableCell className="text-right">
-                        <Button
-                          variant="secondary"
-                          size="sm"
-                          onClick={() => setSelectedCondominio(condominio)}
-                        >
-                          Visualizar e Disparar
-                        </Button>
-                      </TableCell>
+            <div className="space-y-4">
+              <div className="rounded-md border">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Nome do Condomínio</TableHead>
+                      <TableHead>ID Interno</TableHead>
+                      <TableHead>ID Externo</TableHead>
+                      <TableHead className="text-right">Ações</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                  </TableHeader>
+                  <TableBody>
+                    {paginatedCondominios.map((condominio) => (
+                      <TableRow key={condominio.id}>
+                        <TableCell className="font-medium">{condominio.nome_condominio}</TableCell>
+                        <TableCell>{condominio.id_condominio_interno}</TableCell>
+                        <TableCell>{condominio.id_condominio_externo}</TableCell>
+                        <TableCell className="text-right">
+                          <Button
+                            variant="secondary"
+                            size="sm"
+                            onClick={() => setSelectedCondominio(condominio)}
+                          >
+                            Visualizar e Disparar
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+
+              {totalPages > 1 && (
+                <Pagination>
+                  <PaginationContent>
+                    <PaginationItem>
+                      <PaginationPrevious
+                        onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                        className={
+                          currentPage === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'
+                        }
+                      />
+                    </PaginationItem>
+
+                    {getPageNumbers().map((page, i) => (
+                      <PaginationItem key={i}>
+                        {page === '...' ? (
+                          <PaginationEllipsis />
+                        ) : (
+                          <PaginationLink
+                            onClick={() => setCurrentPage(page as number)}
+                            isActive={currentPage === page}
+                            className="cursor-pointer"
+                          >
+                            {page}
+                          </PaginationLink>
+                        )}
+                      </PaginationItem>
+                    ))}
+
+                    <PaginationItem>
+                      <PaginationNext
+                        onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                        className={
+                          currentPage === totalPages
+                            ? 'pointer-events-none opacity-50'
+                            : 'cursor-pointer'
+                        }
+                      />
+                    </PaginationItem>
+                  </PaginationContent>
+                </Pagination>
+              )}
+
+              <div className="text-center text-sm text-muted-foreground">
+                Mostrando {(currentPage - 1) * ITEMS_PER_PAGE + 1} até{' '}
+                {Math.min(currentPage * ITEMS_PER_PAGE, filteredCondominios.length)} de{' '}
+                {filteredCondominios.length} resultados
+              </div>
             </div>
           )}
         </CardContent>
