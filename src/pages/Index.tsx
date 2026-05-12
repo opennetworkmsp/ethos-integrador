@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { getCondominios, Condominio } from '@/services/condominios'
+import { getCondominios, Condominio, triggerN8nWebhook } from '@/services/condominios'
 import {
   Table,
   TableBody,
@@ -56,9 +56,19 @@ export default function Index() {
 
     setIsSending(true)
 
-    // Simulação do envio do Webhook para o n8n
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1500))
+      const payload = {
+        event: 'trigger_condominio',
+        timestamp: new Date().toISOString(),
+        data: {
+          id: selectedCondominio.id,
+          id_condominio_interno: selectedCondominio.id_condominio_interno,
+          id_condominio_externo: selectedCondominio.id_condominio_externo,
+          nome_condominio: selectedCondominio.nome_condominio,
+        },
+      }
+
+      await triggerN8nWebhook(payload)
 
       console.log('Dados enviados para o webhook n8n:', selectedCondominio)
 
@@ -68,7 +78,10 @@ export default function Index() {
 
       setSelectedCondominio(null)
     } catch (error) {
-      toast.error('Erro ao disparar webhook')
+      console.error('Erro ao disparar webhook:', error)
+      toast.error('Erro ao disparar webhook', {
+        description: 'Ocorreu um erro ao enviar os dados para o servidor.',
+      })
     } finally {
       setIsSending(false)
     }

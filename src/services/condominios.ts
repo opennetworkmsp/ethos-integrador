@@ -19,3 +19,11 @@ export const getCondominios = async () => {
   if (error) throw error
   return data as Condominio[]
 }
+
+export const triggerN8nWebhook = async (payload: any) => {
+  const { data, error } = await supabase.functions.invoke('n8n-webhook', {
+    body: payload,
+  })
+  if (error) throw error
+  return data
+}
