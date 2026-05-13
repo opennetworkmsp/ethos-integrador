@@ -2,6 +2,6 @@
   "_versions": {
     "n8n-webhook": 3,
     "manage-users": 4,
-    "sendMessage": 3
+    "sendMessage": 4
   }
 }

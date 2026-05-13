@@ -40,6 +40,8 @@ export default function Index() {
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCondominio, setSelectedCondominio] = useState<Condominio | null>(null)
   const [isSending, setIsSending] = useState(false)
+  const [dataInicio, setDataInicio] = useState('')
+  const [dataFim, setDataFim] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
 
   const [showAuditoria, setShowAuditoria] = useState(false)
@@ -142,6 +144,20 @@ export default function Index() {
   const handleTriggerWebhook = async () => {
     if (!selectedCondominio) return
 
+    if ((dataInicio && !dataFim) || (!dataInicio && dataFim)) {
+      toast.error('Datas incompletas', {
+        description: 'Por favor, preencha ambas as datas (Início e Fim) ou deixe ambas em branco.',
+      })
+      return
+    }
+
+    if (dataInicio && dataFim && new Date(dataInicio) > new Date(dataFim)) {
+      toast.error('Período inválido', {
+        description: 'A data de início não pode ser posterior à data de fim.',
+      })
+      return
+    }
+
     setIsSending(true)
 
     try {
@@ -149,6 +165,8 @@ export default function Index() {
         nome_condominio: selectedCondominio.nome_condominio,
         id_condominio_interno: selectedCondominio.id_condominio_interno,
         id_condominio_externo: selectedCondominio.id_condominio_externo,
+        data_inicio: dataInicio || null,
+        data_fim: dataFim || null,
       }
 
       await triggerN8nWebhook(payload)
@@ -300,7 +318,13 @@ export default function Index() {
 
       <Dialog
         open={!!selectedCondominio}
-        onOpenChange={(open) => !open && setSelectedCondominio(null)}
+        onOpenChange={(open) => {
+          if (!open) {
+            setSelectedCondominio(null)
+            setDataInicio('')
+            setDataFim('')
+          }
+        }}
       >
         <DialogContent className="sm:max-w-[600px]">
           <DialogHeader>
@@ -331,6 +355,31 @@ export default function Index() {
                 </div>
               </div>
 
+              <div className="grid grid-cols-2 gap-4 pt-4 border-t">
+                <div className="space-y-2">
+                  <Label htmlFor="dataInicio" className="text-sm font-medium text-muted-foreground">
+                    Data Início
+                  </Label>
+                  <Input
+                    id="dataInicio"
+                    type="date"
+                    value={dataInicio}
+                    onChange={(e) => setDataInicio(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="dataFim" className="text-sm font-medium text-muted-foreground">
+                    Data Fim
+                  </Label>
+                  <Input
+                    id="dataFim"
+                    type="date"
+                    value={dataFim}
+                    onChange={(e) => setDataFim(e.target.value)}
+                  />
+                </div>
+              </div>
+
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
                   <Code2 className="h-4 w-4 text-muted-foreground" />
@@ -344,6 +393,8 @@ export default function Index() {
                           nome_condominio: selectedCondominio.nome_condominio,
                           id_condominio_interno: selectedCondominio.id_condominio_interno,
                           id_condominio_externo: selectedCondominio.id_condominio_externo,
+                          data_inicio: dataInicio || null,
+                          data_fim: dataFim || null,
                         },
                         null,
                         2,

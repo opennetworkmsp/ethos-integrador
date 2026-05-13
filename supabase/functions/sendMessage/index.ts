@@ -36,7 +36,8 @@ Deno.serve(async (req: Request) => {
     }
 
     const payload = await req.json()
-    const { nome_condominio, id_condominio_interno, id_condominio_externo } = payload
+    const { nome_condominio, id_condominio_interno, id_condominio_externo, data_inicio, data_fim } =
+      payload
 
     if (!nome_condominio || !id_condominio_interno || !id_condominio_externo) {
       throw new Error(
@@ -68,6 +69,8 @@ Deno.serve(async (req: Request) => {
         nome_condominio,
         id_condominio_interno,
         id_condominio_externo,
+        data_inicio,
+        data_fim,
       }),
     })
 
