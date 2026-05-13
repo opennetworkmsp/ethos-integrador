@@ -20,14 +20,16 @@ export interface AuditoriaFiltros {
   dataFim?: string
   condominio?: string
   termoBusca?: string
+  page?: number
+  pageSize?: number
 }
 
 export async function searchAuditoriaMensagens(
   filtros: AuditoriaFiltros,
-): Promise<AuditoriaMensagem[]> {
+): Promise<{ data: AuditoriaMensagem[]; total: number }> {
   let query = supabase
     .from('auditoria_mensagens')
-    .select('*')
+    .select('*', { count: 'exact' })
     .order('created_at', { ascending: false })
 
   if (filtros.dataInicio) {
@@ -50,11 +52,17 @@ export async function searchAuditoriaMensagens(
     )
   }
 
-  const { data, error } = await query
+  if (filtros.page && filtros.pageSize) {
+    const from = (filtros.page - 1) * filtros.pageSize
+    const to = from + filtros.pageSize - 1
+    query = query.range(from, to)
+  }
+
+  const { data, error, count } = await query
 
   if (error) {
     throw error
   }
 
-  return data as AuditoriaMensagem[]
+  return { data: data as AuditoriaMensagem[], total: count || 0 }
 }
