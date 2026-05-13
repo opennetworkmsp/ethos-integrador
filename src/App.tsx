@@ -4,7 +4,8 @@ import { Toaster as Sonner } from '@/components/ui/sonner'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { AuthProvider } from '@/hooks/use-auth'
 import { ProtectedRoute } from '@/components/ProtectedRoute'
-import Index from './pages/Index'
+import Home from './pages/Home'
+import Condominios from './pages/Condominios'
 import Login from './pages/Login'
 import NotFound from './pages/NotFound'
 import Usuarios from './pages/Usuarios'
@@ -23,7 +24,8 @@ const App = () => (
             <Route path="/login" element={<Login />} />
 
             <Route element={<ProtectedRoute />}>
-              <Route path="/" element={<Index />} />
+              <Route path="/" element={<Home />} />
+              <Route path="/condominios" element={<Condominios />} />
               <Route path="/base-conhecimento" element={<BaseConhecimento />} />
               <Route path="/perfil" element={<Perfil />} />
             </Route>

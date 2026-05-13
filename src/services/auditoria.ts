@@ -24,6 +24,15 @@ export interface AuditoriaFiltros {
   pageSize?: number
 }
 
+export const getAuditoriaCount = async () => {
+  const { count, error } = await supabase
+    .from('auditoria_mensagens')
+    .select('*', { count: 'exact', head: true })
+
+  if (error) throw error
+  return count || 0
+}
+
 export async function searchAuditoriaMensagens(
   filtros: AuditoriaFiltros,
 ): Promise<{ data: AuditoriaMensagem[]; total: number }> {

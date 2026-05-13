@@ -50,7 +50,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 
-export default function Index() {
+export default function Condominios() {
   const [condominios, setCondominios] = useState<Condominio[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')

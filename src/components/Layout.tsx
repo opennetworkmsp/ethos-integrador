@@ -1,6 +1,6 @@
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/hooks/use-auth'
-import { Building2, LogOut, Users, Home, User, BookOpen } from 'lucide-react'
+import { Building2, LogOut, Users, LayoutDashboard, Building, User, BookOpen } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Separator } from '@/components/ui/separator'
@@ -68,7 +68,15 @@ export default function Layout() {
                 <SidebarMenuItem>
                   <SidebarMenuButton asChild isActive={location.pathname === '/'}>
                     <Link to="/">
-                      <Home className="h-4 w-4" />
+                      <LayoutDashboard className="h-4 w-4" />
+                      <span>Dashboard</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild isActive={location.pathname === '/condominios'}>
+                    <Link to="/condominios">
+                      <Building className="h-4 w-4" />
                       <span>Condomínios</span>
                     </Link>
                   </SidebarMenuButton>
@@ -157,14 +165,16 @@ export default function Layout() {
           <Separator orientation="vertical" className="h-6 mx-2" />
           <h1 className="text-lg font-semibold">
             {location.pathname === '/'
-              ? 'Condomínios'
-              : location.pathname === '/base-conhecimento'
-                ? 'Base de Conhecimento'
-                : location.pathname === '/usuarios'
-                  ? 'Gestão de Usuários'
-                  : location.pathname === '/perfil'
-                    ? 'Meu Perfil'
-                    : ''}
+              ? 'Dashboard'
+              : location.pathname === '/condominios'
+                ? 'Condomínios'
+                : location.pathname === '/base-conhecimento'
+                  ? 'Base de Conhecimento'
+                  : location.pathname === '/usuarios'
+                    ? 'Gestão de Usuários'
+                    : location.pathname === '/perfil'
+                      ? 'Meu Perfil'
+                      : ''}
           </h1>
         </header>
         <main className="flex-1 p-4 lg:p-6 overflow-auto">

@@ -8,6 +8,15 @@ export interface Condominio {
   created_at: string
 }
 
+export const getCondominiosCount = async () => {
+  const { count, error } = await supabase
+    .from('condominios' as any)
+    .select('*', { count: 'exact', head: true })
+
+  if (error) throw error
+  return count || 0
+}
+
 export const getCondominios = async () => {
   // Using 'as any' since condominios table is dynamically created via migration
   // and not present in auto-generated types
