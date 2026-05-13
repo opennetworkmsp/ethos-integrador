@@ -3,6 +3,7 @@
     "n8n-webhook": 8,
     "manage-users": 10,
     "sendMessage": 10,
-    "uploadDocument": 8
+    "uploadDocument": 8,
+    "upload-files-agent": 1
   }
 }
