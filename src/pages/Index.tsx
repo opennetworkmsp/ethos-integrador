@@ -141,6 +141,13 @@ export default function Index() {
     return pages
   }
 
+  const formatToMMDDYYYY = (dateString: string) => {
+    if (!dateString) return null
+    const [year, month, day] = dateString.split('-')
+    if (!year || !month || !day) return dateString
+    return `${month}/${day}/${year}`
+  }
+
   const handleTriggerWebhook = async () => {
     if (!selectedCondominio) return
 
@@ -165,8 +172,8 @@ export default function Index() {
         nome_condominio: selectedCondominio.nome_condominio,
         id_condominio_interno: selectedCondominio.id_condominio_interno,
         id_condominio_externo: selectedCondominio.id_condominio_externo,
-        data_inicio: dataInicio || null,
-        data_fim: dataFim || null,
+        data_inicio: formatToMMDDYYYY(dataInicio),
+        data_fim: formatToMMDDYYYY(dataFim),
       }
 
       await triggerN8nWebhook(payload)
@@ -393,8 +400,8 @@ export default function Index() {
                           nome_condominio: selectedCondominio.nome_condominio,
                           id_condominio_interno: selectedCondominio.id_condominio_interno,
                           id_condominio_externo: selectedCondominio.id_condominio_externo,
-                          data_inicio: dataInicio || null,
-                          data_fim: dataFim || null,
+                          data_inicio: formatToMMDDYYYY(dataInicio),
+                          data_fim: formatToMMDDYYYY(dataFim),
                         },
                         null,
                         2,
