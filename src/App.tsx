@@ -9,6 +9,7 @@ import Login from './pages/Login'
 import NotFound from './pages/NotFound'
 import Usuarios from './pages/Usuarios'
 import Perfil from './pages/Perfil'
+import BaseConhecimento from './pages/BaseConhecimento'
 import Layout from './components/Layout'
 
 const App = () => (
@@ -23,6 +24,7 @@ const App = () => (
 
             <Route element={<ProtectedRoute />}>
               <Route path="/" element={<Index />} />
+              <Route path="/base-conhecimento" element={<BaseConhecimento />} />
               <Route path="/perfil" element={<Perfil />} />
             </Route>
 

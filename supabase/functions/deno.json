@@ -1,7 +1,8 @@
 {
   "_versions": {
-    "n8n-webhook": 3,
-    "manage-users": 4,
-    "sendMessage": 4
+    "n8n-webhook": 8,
+    "manage-users": 10,
+    "sendMessage": 10,
+    "uploadDocument": 8
   }
 }

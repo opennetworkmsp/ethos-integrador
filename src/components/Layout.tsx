@@ -1,6 +1,6 @@
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/hooks/use-auth'
-import { Building2, LogOut, Users, Home, User } from 'lucide-react'
+import { Building2, LogOut, Users, Home, User, BookOpen } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Separator } from '@/components/ui/separator'
@@ -70,6 +70,14 @@ export default function Layout() {
                     <Link to="/">
                       <Home className="h-4 w-4" />
                       <span>Condomínios</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild isActive={location.pathname === '/base-conhecimento'}>
+                    <Link to="/base-conhecimento">
+                      <BookOpen className="h-4 w-4" />
+                      <span>Base de Conhecimento</span>
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -150,11 +158,13 @@ export default function Layout() {
           <h1 className="text-lg font-semibold">
             {location.pathname === '/'
               ? 'Condomínios'
-              : location.pathname === '/usuarios'
-                ? 'Gestão de Usuários'
-                : location.pathname === '/perfil'
-                  ? 'Meu Perfil'
-                  : ''}
+              : location.pathname === '/base-conhecimento'
+                ? 'Base de Conhecimento'
+                : location.pathname === '/usuarios'
+                  ? 'Gestão de Usuários'
+                  : location.pathname === '/perfil'
+                    ? 'Meu Perfil'
+                    : ''}
           </h1>
         </header>
         <main className="flex-1 p-4 lg:p-6 overflow-auto">
