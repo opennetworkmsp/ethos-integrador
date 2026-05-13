@@ -20,7 +20,16 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Building, Code2, Loader2, Search, Send, FileText, ExternalLink } from 'lucide-react'
+import {
+  Building,
+  Code2,
+  Loader2,
+  Search,
+  Send,
+  FileText,
+  ExternalLink,
+  Download,
+} from 'lucide-react'
 import { toast } from 'sonner'
 import {
   Pagination,
@@ -33,6 +42,13 @@ import {
 } from '@/components/ui/pagination'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Badge } from '@/components/ui/badge'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 
 export default function Index() {
   const [condominios, setCondominios] = useState<Condominio[]>([])
@@ -58,7 +74,7 @@ export default function Index() {
   const [hasSearched, setHasSearched] = useState(false)
 
   const ITEMS_PER_PAGE = 10
-  const AUDIT_ITEMS_PER_PAGE = 20
+  const [auditPageSize, setAuditPageSize] = useState(20)
 
   useEffect(() => {
     setCurrentPage(1)
@@ -94,7 +110,7 @@ export default function Index() {
     }
   }, [showAuditoria])
 
-  const handleSearchAuditoria = async (page = 1) => {
+  const handleSearchAuditoria = async (page = 1, pageSize = auditPageSize) => {
     setLoadingAuditoria(true)
     try {
       const { data, total } = await searchAuditoriaMensagens({
@@ -103,7 +119,7 @@ export default function Index() {
         condominio: auditCondominio,
         termoBusca: auditSearchTerm,
         page,
-        pageSize: AUDIT_ITEMS_PER_PAGE,
+        pageSize,
       })
       setAuditoriaLogs(data)
       setTotalAuditoria(total)
@@ -144,6 +160,53 @@ export default function Index() {
       }
     }
     return pages
+  }
+
+  const getAuditPageNumbers = () => {
+    const totalAuditPages = Math.ceil(totalAuditoria / auditPageSize)
+    const pages: (number | string)[] = []
+    if (totalAuditPages <= 7) {
+      for (let i = 1; i <= totalAuditPages; i++) pages.push(i)
+    } else {
+      if (auditPage <= 3) {
+        pages.push(1, 2, 3, 4, '...', totalAuditPages)
+      } else if (auditPage >= totalAuditPages - 2) {
+        pages.push(
+          1,
+          '...',
+          totalAuditPages - 3,
+          totalAuditPages - 2,
+          totalAuditPages - 1,
+          totalAuditPages,
+        )
+      } else {
+        pages.push(1, '...', auditPage - 1, auditPage, auditPage + 1, '...', totalAuditPages)
+      }
+    }
+    return pages
+  }
+
+  const handleExportCSV = () => {
+    if (auditoriaLogs.length === 0) return
+    const headers = ['Data', 'Cliente', 'Unidade', 'Condomínio', 'Telefone', 'Link Boleto']
+    const rows = auditoriaLogs.map((log) => [
+      new Date(log.created_at).toLocaleString('pt-BR'),
+      `"${log.nome_cliente || ''}"`,
+      `"${log.unidade || ''}"`,
+      `"${log.condominio || ''}"`,
+      `"${log.telefone_destino || log.telefone_origem || ''}"`,
+      `"${log.link_boleto || ''}"`,
+    ])
+    const csvContent = [headers.join(','), ...rows.map((r) => r.join(','))].join('\n')
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+    const link = document.createElement('a')
+    const url = URL.createObjectURL(blob)
+    link.setAttribute('href', url)
+    link.setAttribute('download', `auditoria_envios_${new Date().toISOString().split('T')[0]}.csv`)
+    link.style.visibility = 'hidden'
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
   }
 
   const formatToMMDDYYYY = (dateString: string) => {
@@ -505,7 +568,36 @@ export default function Index() {
                 />
               </div>
             </div>
-            <div className="flex justify-end mt-2">
+            <div className="flex justify-between items-center mt-2">
+              <div className="flex items-center gap-2">
+                <Select
+                  value={auditPageSize.toString()}
+                  onValueChange={(val) => {
+                    const newSize = Number(val)
+                    setAuditPageSize(newSize)
+                    if (hasSearched) handleSearchAuditoria(1, newSize)
+                  }}
+                >
+                  <SelectTrigger className="h-8 w-[130px] text-sm">
+                    <SelectValue placeholder="Registros" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="10">10 por página</SelectItem>
+                    <SelectItem value="20">20 por página</SelectItem>
+                    <SelectItem value="50">50 por página</SelectItem>
+                    <SelectItem value="100">100 por página</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleExportCSV}
+                  disabled={auditoriaLogs.length === 0}
+                >
+                  <Download className="mr-2 h-4 w-4" />
+                  Exportar CSV
+                </Button>
+              </div>
               <Button
                 onClick={() => handleSearchAuditoria(1)}
                 disabled={loadingAuditoria}
@@ -545,71 +637,68 @@ export default function Index() {
               </div>
             ) : (
               <div className="flex flex-col h-full space-y-4">
-                <div className="rounded-md border flex-1 overflow-hidden flex flex-col">
-                  <ScrollArea className="flex-1">
-                    <Table>
-                      <TableHeader className="sticky top-0 bg-background z-10 shadow-sm">
-                        <TableRow>
-                          <TableHead className="w-[160px]">Data</TableHead>
-                          <TableHead>Cliente</TableHead>
-                          <TableHead>Condomínio</TableHead>
-                          <TableHead>Telefone Destino</TableHead>
-                          <TableHead className="w-[100px] text-right">Boleto</TableHead>
+                <div className="rounded-md border flex-1 overflow-auto">
+                  <Table>
+                    <TableHeader className="sticky top-0 bg-background z-10 shadow-sm ring-1 ring-border">
+                      <TableRow>
+                        <TableHead className="w-[160px]">Data</TableHead>
+                        <TableHead>Cliente</TableHead>
+                        <TableHead>Condomínio</TableHead>
+                        <TableHead>Telefone Destino</TableHead>
+                        <TableHead className="w-[100px] text-right">Boleto</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {auditoriaLogs.map((log) => (
+                        <TableRow key={log.id}>
+                          <TableCell className="whitespace-nowrap text-sm text-muted-foreground">
+                            {new Date(log.created_at).toLocaleString('pt-BR')}
+                          </TableCell>
+                          <TableCell className="font-medium text-sm">
+                            {log.nome_cliente || '-'}
+                            {log.unidade && (
+                              <Badge variant="outline" className="ml-2 text-[10px]">
+                                Un: {log.unidade}
+                              </Badge>
+                            )}
+                          </TableCell>
+                          <TableCell
+                            className="text-sm max-w-[200px] truncate"
+                            title={log.condominio || ''}
+                          >
+                            {log.condominio || '-'}
+                          </TableCell>
+                          <TableCell className="text-sm">
+                            {log.telefone_destino || log.telefone_origem || '-'}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            {log.link_boleto ? (
+                              <Button variant="ghost" size="sm" asChild className="h-8">
+                                <a
+                                  href={log.link_boleto}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="flex items-center gap-1"
+                                >
+                                  <ExternalLink className="h-3 w-3" />
+                                  Link
+                                </a>
+                              </Button>
+                            ) : (
+                              <span className="text-muted-foreground text-sm">-</span>
+                            )}
+                          </TableCell>
                         </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {auditoriaLogs.map((log) => (
-                          <TableRow key={log.id}>
-                            <TableCell className="whitespace-nowrap text-sm text-muted-foreground">
-                              {new Date(log.created_at).toLocaleString('pt-BR')}
-                            </TableCell>
-                            <TableCell className="font-medium text-sm">
-                              {log.nome_cliente || '-'}
-                              {log.unidade && (
-                                <Badge variant="outline" className="ml-2 text-[10px]">
-                                  Un: {log.unidade}
-                                </Badge>
-                              )}
-                            </TableCell>
-                            <TableCell
-                              className="text-sm max-w-[200px] truncate"
-                              title={log.condominio || ''}
-                            >
-                              {log.condominio || '-'}
-                            </TableCell>
-                            <TableCell className="text-sm">
-                              {log.telefone_destino || log.telefone_origem || '-'}
-                            </TableCell>
-                            <TableCell className="text-right">
-                              {log.link_boleto ? (
-                                <Button variant="ghost" size="sm" asChild className="h-8">
-                                  <a
-                                    href={log.link_boleto}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="flex items-center gap-1"
-                                  >
-                                    <ExternalLink className="h-3 w-3" />
-                                    Link
-                                  </a>
-                                </Button>
-                              ) : (
-                                <span className="text-muted-foreground text-sm">-</span>
-                              )}
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </ScrollArea>
+                      ))}
+                    </TableBody>
+                  </Table>
                 </div>
 
-                {totalAuditoria > AUDIT_ITEMS_PER_PAGE && (
-                  <div className="flex justify-between items-center px-2 pt-2 border-t mt-2">
-                    <p className="text-sm text-muted-foreground">
-                      Mostrando {(auditPage - 1) * AUDIT_ITEMS_PER_PAGE + 1} até{' '}
-                      {Math.min(auditPage * AUDIT_ITEMS_PER_PAGE, totalAuditoria)} de{' '}
-                      {totalAuditoria}
+                {totalAuditoria > 0 && (
+                  <div className="flex flex-col sm:flex-row justify-between items-center px-2 pt-2 border-t mt-2 gap-4 shrink-0">
+                    <p className="text-sm text-muted-foreground whitespace-nowrap">
+                      Mostrando {(auditPage - 1) * auditPageSize + 1} até{' '}
+                      {Math.min(auditPage * auditPageSize, totalAuditoria)} de {totalAuditoria}
                     </p>
                     <Pagination className="justify-end m-0 w-auto">
                       <PaginationContent>
@@ -623,18 +712,36 @@ export default function Index() {
                             }
                           />
                         </PaginationItem>
+
+                        {getAuditPageNumbers().map((page, i) => (
+                          <PaginationItem key={i} className="hidden sm:inline-block">
+                            {page === '...' ? (
+                              <PaginationEllipsis />
+                            ) : (
+                              <PaginationLink
+                                onClick={() => handleSearchAuditoria(page as number)}
+                                isActive={auditPage === page}
+                                className={
+                                  loadingAuditoria
+                                    ? 'pointer-events-none opacity-50'
+                                    : 'cursor-pointer'
+                                }
+                              >
+                                {page}
+                              </PaginationLink>
+                            )}
+                          </PaginationItem>
+                        ))}
+
                         <PaginationItem>
                           <PaginationNext
                             onClick={() =>
                               handleSearchAuditoria(
-                                Math.min(
-                                  Math.ceil(totalAuditoria / AUDIT_ITEMS_PER_PAGE),
-                                  auditPage + 1,
-                                ),
+                                Math.min(Math.ceil(totalAuditoria / auditPageSize), auditPage + 1),
                               )
                             }
                             className={
-                              auditPage >= Math.ceil(totalAuditoria / AUDIT_ITEMS_PER_PAGE) ||
+                              auditPage >= Math.ceil(totalAuditoria / auditPageSize) ||
                               loadingAuditoria
                                 ? 'pointer-events-none opacity-50'
                                 : 'cursor-pointer'
