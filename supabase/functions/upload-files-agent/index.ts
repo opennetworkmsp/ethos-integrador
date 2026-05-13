@@ -3,6 +3,7 @@ import { createClient } from 'jsr:@supabase/supabase-js@2'
 import { corsHeaders } from '../_shared/cors.ts'
 
 Deno.serve(async (req: Request) => {
+  // Tratamento de requisições de preflight (CORS)
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
@@ -13,8 +14,12 @@ Deno.serve(async (req: Request) => {
       throw new Error('Unauthorized: Authorization header is required')
     }
 
-    const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? ''
-    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY') ?? ''
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')
+    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')
+
+    if (!supabaseUrl || !supabaseAnonKey) {
+      throw new Error('Server configuration error: Missing Supabase variables')
+    }
 
     const supabaseClient = createClient(supabaseUrl, supabaseAnonKey, {
       global: { headers: { Authorization: authHeader } },
@@ -29,7 +34,11 @@ Deno.serve(async (req: Request) => {
       throw new Error('Unauthorized: Invalid JWT')
     }
 
-    const payload = await req.json()
+    const payload = await req.json().catch(() => null)
+    if (!payload) {
+      throw new Error('Bad Request: Invalid JSON body')
+    }
+
     const {
       nome_condominio,
       id_condominio_interno,
@@ -70,8 +79,10 @@ Deno.serve(async (req: Request) => {
         id_condominio_interno,
         id_condominio_externo,
         arquivo_base64,
-        filename,
-        contentType,
+        filename: filename || 'document.pdf',
+        contentType: contentType || 'application/pdf',
+        user_id: user.id,
+        user_email: user.email,
       }),
     })
 
@@ -81,7 +92,7 @@ Deno.serve(async (req: Request) => {
       throw new Error(`Erro ao comunicar com o N8n. Status: ${response.status} - ${responseText}`)
     }
 
-    let responseData = responseText
+    let responseData: any = responseText
     try {
       if (responseText) {
         responseData = JSON.parse(responseText)
@@ -95,9 +106,11 @@ Deno.serve(async (req: Request) => {
     })
   } catch (error: any) {
     console.error('Error in upload-files-agent function:', error)
-    const isUnauthorized =
-      error.message?.includes('Unauthorized') || error.message?.includes('Invalid JWT')
-    const status = isUnauthorized ? 401 : 400
+
+    let status = 400
+    if (error.message?.includes('Unauthorized') || error.message?.includes('Invalid JWT')) {
+      status = 401
+    }
 
     return new Response(
       JSON.stringify({ error: error.message || 'Erro inesperado no servidor.' }),
