@@ -3,6 +3,7 @@
     "n8n-webhook": 11,
     "manage-users": 13,
     "sendMessage": 13,
-    "upload-files-agent": 4
+    "upload-files-agent": 4,
+    "chat-agent": 1
   }
 }
