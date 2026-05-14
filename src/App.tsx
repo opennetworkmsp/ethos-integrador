@@ -11,6 +11,7 @@ import NotFound from './pages/NotFound'
 import Usuarios from './pages/Usuarios'
 import Perfil from './pages/Perfil'
 import BaseConhecimento from './pages/BaseConhecimento'
+import Assistente from './pages/Assistente'
 import Layout from './components/Layout'
 
 const App = () => (
@@ -27,6 +28,7 @@ const App = () => (
               <Route path="/" element={<Home />} />
               <Route path="/condominios" element={<Condominios />} />
               <Route path="/base-conhecimento" element={<BaseConhecimento />} />
+              <Route path="/assistente" element={<Assistente />} />
               <Route path="/perfil" element={<Perfil />} />
             </Route>
 

@@ -1,6 +1,15 @@
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/hooks/use-auth'
-import { Building2, LogOut, Users, LayoutDashboard, Building, User, BookOpen } from 'lucide-react'
+import {
+  Building2,
+  LogOut,
+  Users,
+  LayoutDashboard,
+  Building,
+  User,
+  BookOpen,
+  Bot,
+} from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Separator } from '@/components/ui/separator'
@@ -89,6 +98,14 @@ export default function Layout() {
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild isActive={location.pathname === '/assistente'}>
+                    <Link to="/assistente">
+                      <Bot className="h-4 w-4" />
+                      <span>Assistente</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
@@ -170,11 +187,13 @@ export default function Layout() {
                 ? 'Condomínios'
                 : location.pathname === '/base-conhecimento'
                   ? 'Base de Conhecimento'
-                  : location.pathname === '/usuarios'
-                    ? 'Gestão de Usuários'
-                    : location.pathname === '/perfil'
-                      ? 'Meu Perfil'
-                      : ''}
+                  : location.pathname === '/assistente'
+                    ? 'Assistente Virtual'
+                    : location.pathname === '/usuarios'
+                      ? 'Gestão de Usuários'
+                      : location.pathname === '/perfil'
+                        ? 'Meu Perfil'
+                        : ''}
           </h1>
         </header>
         <main className="flex-1 p-4 lg:p-6 overflow-auto">
