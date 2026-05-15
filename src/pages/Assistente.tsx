@@ -2,12 +2,16 @@ import { useState } from 'react'
 import { BasicChat, Message } from '@/components/ui/basic-chat'
 import { invokeChatAgent } from '@/services/chat'
 import { toast } from 'sonner'
+import { useAuth } from '@/hooks/use-auth'
 
 export default function Assistente() {
+  const { user } = useAuth()
+  const userName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Usuário'
+
   const [messages, setMessages] = useState<Message[]>([
     {
       id: 'welcome',
-      content: 'Olá! Sou o seu assistente virtual. Como posso ajudar você hoje?',
+      content: 'Olá! Sou o Assistente Ethos. Como posso ajudar você hoje?',
       sender: 'other',
     },
   ])
@@ -72,21 +76,23 @@ export default function Assistente() {
   }
 
   return (
-    <div className="container py-8 max-w-5xl mx-auto space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 flex flex-col h-[calc(100vh-4rem)]">
+    <div className="container py-4 md:py-8 max-w-5xl mx-auto space-y-4 md:space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 flex flex-col h-[calc(100vh-4rem)]">
       <div className="shrink-0">
-        <h1 className="text-3xl font-bold tracking-tight">Assistente Virtual</h1>
-        <p className="text-muted-foreground mt-1">
-          Interaja com seus fluxos e automações diretamente pelo chat.
+        <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Assistente Ethos</h1>
+        <p className="text-sm md:text-base text-muted-foreground mt-1">
+          Interaja com seus fluxos e automações diretamente pelo chat inteligente.
         </p>
       </div>
 
-      <div className="flex-1 flex justify-center pb-8 min-h-0">
+      <div className="flex-1 flex justify-center pb-4 md:pb-8 min-h-0">
         <BasicChat
-          userName="Agente Operacional"
+          userName="Assistente Ethos"
           userOnline={true}
           messages={messages}
           onSendMessage={handleSendMessage}
           isSending={isSending}
+          userAvatar="https://img.usecurling.com/i?q=building&color=primary&shape=fill"
+          clientName={userName}
         />
       </div>
     </div>

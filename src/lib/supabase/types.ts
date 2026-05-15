@@ -74,22 +74,28 @@ export type Database = {
       }
       convencoes_chunks: {
         Row: {
-          content: string | null
+          content: string
+          created_at: string | null
           embedding: string | null
           id: number
-          metadata: Json | null
+          metadata: Json
+          updated_at: string | null
         }
         Insert: {
-          content?: string | null
+          content: string
+          created_at?: string | null
           embedding?: string | null
           id?: number
-          metadata?: Json | null
+          metadata: Json
+          updated_at?: string | null
         }
         Update: {
-          content?: string | null
+          content?: string
+          created_at?: string | null
           embedding?: string | null
           id?: number
-          metadata?: Json | null
+          metadata?: Json
+          updated_at?: string | null
         }
         Relationships: []
       }
@@ -230,13 +236,7 @@ export type Database = {
       }
     }
     Views: {
-      inventario_condominios: {
-        Row: {
-          nome_do_condominio: string | null
-          total_de_artigos_fatiados: number | null
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Functions: {
       match_documents: {
@@ -427,9 +427,11 @@ export const Constants = {
 //   nome_condominio: text (not null)
 // Table: convencoes_chunks
 //   id: bigint (not null, default: nextval('convencoes_chunks_id_seq'::regclass))
-//   content: text (nullable)
-//   metadata: jsonb (nullable)
+//   content: text (not null)
+//   metadata: jsonb (not null)
 //   embedding: vector (nullable)
+//   created_at: timestamp with time zone (nullable, default: now())
+//   updated_at: timestamp with time zone (nullable, default: now())
 // Table: historico_infracoes
 //   id: integer (not null, default: nextval('historico_infracoes_id_seq'::regclass))
 //   nome_condominio: text (nullable)
@@ -439,9 +441,6 @@ export const Constants = {
 //   artigo_violado: text (nullable)
 //   data_infracao: timestamp with time zone (nullable, default: now())
 //   status: text (nullable, default: 'Primeira Advertência'::text)
-// Table: inventario_condominios
-//   nome_do_condominio: text (nullable)
-//   total_de_artigos_fatiados: bigint (nullable)
 // Table: n8n_chat_histories
 //   id: integer (not null, default: nextval('n8n_chat_histories_id_seq'::regclass))
 //   session_id: character varying (not null)
@@ -497,16 +496,6 @@ export const Constants = {
 //   Policy "authenticated_update_condominios" (UPDATE, PERMISSIVE) roles={authenticated}
 //     USING: true
 //     WITH CHECK: true
-// Table: convencoes_chunks
-//   Policy "authenticated_delete_chunks" (DELETE, PERMISSIVE) roles={authenticated}
-//     USING: true
-//   Policy "authenticated_insert_chunks" (INSERT, PERMISSIVE) roles={authenticated}
-//     WITH CHECK: true
-//   Policy "authenticated_select_chunks" (SELECT, PERMISSIVE) roles={authenticated}
-//     USING: true
-//   Policy "authenticated_update_chunks" (UPDATE, PERMISSIVE) roles={authenticated}
-//     USING: true
-//     WITH CHECK: true
 // Table: historico_infracoes
 //   Policy "authenticated_delete_infracoes" (DELETE, PERMISSIVE) roles={authenticated}
 //     USING: true
@@ -540,6 +529,13 @@ export const Constants = {
 //     WITH CHECK: (id = auth.uid())
 //   Policy "Users can view their own profile or admins view all" (SELECT, PERMISSIVE) roles={authenticated}
 //     USING: ((id = auth.uid()) OR (((auth.jwt() -> 'user_metadata'::text) ->> 'role'::text) = 'administrador'::text))
+
+// --- WARNING: TABLES WITH RLS ENABLED BUT NO POLICIES ---
+// These tables have Row Level Security enabled but NO policies defined.
+// This means ALL queries (SELECT, INSERT, UPDATE, DELETE) will return ZERO rows
+// for non-superuser roles (including the anon and authenticated roles used by the app).
+// You MUST create RLS policies for these tables to allow data access.
+//   - convencoes_chunks
 
 // --- DATABASE FUNCTIONS ---
 // FUNCTION handle_new_user()
@@ -581,3 +577,23 @@ export const Constants = {
 //   end;
 //   $function$
 //
+// FUNCTION update_updated_at_column()
+//   CREATE OR REPLACE FUNCTION public.update_updated_at_column()
+//    RETURNS trigger
+//    LANGUAGE plpgsql
+//   AS $function$
+//   BEGIN
+//       NEW.updated_at = NOW();
+//       RETURN NEW;
+//   END;
+//   $function$
+//
+
+// --- TRIGGERS ---
+// Table: convencoes_chunks
+//   update_convencoes_chunks_updated_at: CREATE TRIGGER update_convencoes_chunks_updated_at BEFORE UPDATE ON public.convencoes_chunks FOR EACH ROW EXECUTE FUNCTION update_updated_at_column()
+
+// --- INDEXES ---
+// Table: convencoes_chunks
+//   CREATE INDEX idx_convencoes_chunks_embedding_ivfflat ON public.convencoes_chunks USING ivfflat (embedding vector_cosine_ops) WITH (lists='100')
+//   CREATE INDEX idx_convencoes_chunks_metadata_gin ON public.convencoes_chunks USING gin (metadata)
