@@ -91,7 +91,6 @@ export default function Assistente() {
           messages={messages}
           onSendMessage={handleSendMessage}
           isSending={isSending}
-          userAvatar="https://img.usecurling.com/i?q=building&color=primary&shape=fill"
           clientName={userName}
         />
       </div>
