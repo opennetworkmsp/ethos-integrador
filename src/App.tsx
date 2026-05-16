@@ -12,6 +12,7 @@ import Usuarios from './pages/Usuarios'
 import Perfil from './pages/Perfil'
 import BaseConhecimento from './pages/BaseConhecimento'
 import Assistente from './pages/Assistente'
+import Notificacoes from './pages/Notificacoes'
 import Layout from './components/Layout'
 
 const App = () => (
@@ -29,6 +30,7 @@ const App = () => (
               <Route path="/condominios" element={<Condominios />} />
               <Route path="/base-conhecimento" element={<BaseConhecimento />} />
               <Route path="/assistente" element={<Assistente />} />
+              <Route path="/notificacoes" element={<Notificacoes />} />
               <Route path="/perfil" element={<Perfil />} />
             </Route>
 

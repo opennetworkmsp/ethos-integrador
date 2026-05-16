@@ -9,6 +9,7 @@ import {
   User,
   BookOpen,
   Bot,
+  ClipboardList,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
@@ -106,6 +107,14 @@ export default function Layout() {
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild isActive={location.pathname === '/notificacoes'}>
+                    <Link to="/notificacoes">
+                      <ClipboardList className="h-4 w-4" />
+                      <span>Registro de Notificações</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
@@ -189,11 +198,13 @@ export default function Layout() {
                   ? 'Base de Conhecimento'
                   : location.pathname === '/assistente'
                     ? 'Assistente Virtual'
-                    : location.pathname === '/usuarios'
-                      ? 'Gestão de Usuários'
-                      : location.pathname === '/perfil'
-                        ? 'Meu Perfil'
-                        : ''}
+                    : location.pathname === '/notificacoes'
+                      ? 'Registro de Notificações'
+                      : location.pathname === '/usuarios'
+                        ? 'Gestão de Usuários'
+                        : location.pathname === '/perfil'
+                          ? 'Meu Perfil'
+                          : ''}
           </h1>
         </header>
         <main className="flex-1 p-4 lg:p-6 overflow-auto">
