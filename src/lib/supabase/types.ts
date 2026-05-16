@@ -213,6 +213,44 @@ export type Database = {
         }
         Relationships: []
       }
+      notificacoes: {
+        Row: {
+          condominio_id: string
+          created_at: string
+          data_infracao: string
+          descricao: string
+          id: string
+          unidade: string
+          user_id: string | null
+        }
+        Insert: {
+          condominio_id: string
+          created_at?: string
+          data_infracao: string
+          descricao: string
+          id?: string
+          unidade: string
+          user_id?: string | null
+        }
+        Update: {
+          condominio_id?: string
+          created_at?: string
+          data_infracao?: string
+          descricao?: string
+          id?: string
+          unidade?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'notificacoes_condominio_id_fkey'
+            columns: ['condominio_id']
+            isOneToOne: false
+            referencedRelation: 'condominios'
+            referencedColumns: ['id_condominio_interno']
+          },
+        ]
+      }
       profiles: {
         Row: {
           email: string
@@ -445,6 +483,14 @@ export const Constants = {
 //   id: integer (not null, default: nextval('n8n_chat_histories_id_seq'::regclass))
 //   session_id: character varying (not null)
 //   message: jsonb (not null)
+// Table: notificacoes
+//   id: uuid (not null, default: gen_random_uuid())
+//   condominio_id: text (not null)
+//   data_infracao: date (not null)
+//   unidade: text (not null)
+//   descricao: text (not null)
+//   user_id: uuid (nullable)
+//   created_at: timestamp with time zone (not null, default: now())
 // Table: profiles
 //   id: uuid (not null)
 //   email: text (not null)
@@ -465,6 +511,10 @@ export const Constants = {
 //   PRIMARY KEY historico_infracoes_pkey: PRIMARY KEY (id)
 // Table: n8n_chat_histories
 //   PRIMARY KEY n8n_chat_histories_pkey: PRIMARY KEY (id)
+// Table: notificacoes
+//   FOREIGN KEY notificacoes_condominio_id_fkey: FOREIGN KEY (condominio_id) REFERENCES condominios(id_condominio_interno) ON DELETE CASCADE
+//   PRIMARY KEY notificacoes_pkey: PRIMARY KEY (id)
+//   FOREIGN KEY notificacoes_user_id_fkey: FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE SET NULL
 // Table: profiles
 //   FOREIGN KEY profiles_id_fkey: FOREIGN KEY (id) REFERENCES auth.users(id) ON DELETE CASCADE
 //   PRIMARY KEY profiles_pkey: PRIMARY KEY (id)
@@ -514,6 +564,16 @@ export const Constants = {
 //   Policy "authenticated_select_n8n" (SELECT, PERMISSIVE) roles={authenticated}
 //     USING: true
 //   Policy "authenticated_update_n8n" (UPDATE, PERMISSIVE) roles={authenticated}
+//     USING: true
+//     WITH CHECK: true
+// Table: notificacoes
+//   Policy "authenticated_delete_notificacoes" (DELETE, PERMISSIVE) roles={authenticated}
+//     USING: true
+//   Policy "authenticated_insert_notificacoes" (INSERT, PERMISSIVE) roles={authenticated}
+//     WITH CHECK: true
+//   Policy "authenticated_select_notificacoes" (SELECT, PERMISSIVE) roles={authenticated}
+//     USING: true
+//   Policy "authenticated_update_notificacoes" (UPDATE, PERMISSIVE) roles={authenticated}
 //     USING: true
 //     WITH CHECK: true
 // Table: profiles

@@ -31,7 +31,8 @@ import {
 } from '@/components/ui/dialog'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { useToast } from '@/hooks/use-toast'
-import { Plus, Search, Trash2 } from 'lucide-react'
+import { Plus, Search, Trash2, CheckCircle } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
 
 interface Notificacao {
   id: string
@@ -39,6 +40,7 @@ interface Notificacao {
   data_infracao: string
   unidade: string
   descricao: string
+  status: string
   created_at: string
   condominios?: {
     nome_condominio: string
@@ -139,6 +141,24 @@ export default function Notificacoes() {
     }
   }
 
+  const handleToggleStatus = async (id: string, newStatus: string) => {
+    const { error } = await supabase
+      .from('notificacoes')
+      .update({ status: newStatus } as any)
+      .eq('id', id)
+
+    if (error) {
+      toast({
+        title: 'Erro',
+        description: 'Não foi possível atualizar o status.',
+        variant: 'destructive',
+      })
+    } else {
+      toast({ title: 'Sucesso', description: `Notificação marcada como ${newStatus}.` })
+      fetchData()
+    }
+  }
+
   const formatDate = (dateString: string) => {
     if (!dateString) return ''
     const [year, month, day] = dateString.split('-')
@@ -151,7 +171,8 @@ export default function Notificacoes() {
     return (
       n.condominios?.nome_condominio?.toLowerCase().includes(term) ||
       n.unidade.toLowerCase().includes(term) ||
-      n.descricao.toLowerCase().includes(term)
+      n.descricao.toLowerCase().includes(term) ||
+      (n.status || 'Aguardando').toLowerCase().includes(term)
     )
   })
 
@@ -276,19 +297,20 @@ export default function Notificacoes() {
                   <TableHead>Condomínio</TableHead>
                   <TableHead className="w-[100px]">Unidade</TableHead>
                   <TableHead>Descrição</TableHead>
-                  <TableHead className="w-[80px] text-right">Ações</TableHead>
+                  <TableHead className="w-[120px]">Status</TableHead>
+                  <TableHead className="w-[100px] text-right">Ações</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {isLoading ? (
                   <TableRow>
-                    <TableCell colSpan={5} className="text-center h-24">
+                    <TableCell colSpan={6} className="text-center h-24">
                       Carregando notificações...
                     </TableCell>
                   </TableRow>
                 ) : filteredNotificacoes.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={5} className="text-center h-24 text-muted-foreground">
+                    <TableCell colSpan={6} className="text-center h-24 text-muted-foreground">
                       Nenhuma notificação encontrada.
                     </TableCell>
                   </TableRow>
@@ -305,16 +327,43 @@ export default function Notificacoes() {
                       <TableCell className="max-w-[300px] truncate" title={notificacao.descricao}>
                         {notificacao.descricao}
                       </TableCell>
-                      <TableCell className="text-right">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleDelete(notificacao.id)}
-                          className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                      <TableCell>
+                        <Badge
+                          variant={notificacao.status === 'Processada' ? 'default' : 'secondary'}
+                          className={
+                            notificacao.status === 'Processada'
+                              ? 'bg-green-600 hover:bg-green-700'
+                              : 'bg-yellow-500 hover:bg-yellow-600 text-yellow-950'
+                          }
                         >
-                          <Trash2 className="h-4 w-4" />
-                          <span className="sr-only">Excluir</span>
-                        </Button>
+                          {notificacao.status || 'Aguardando'}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex justify-end gap-1">
+                          {(!notificacao.status || notificacao.status === 'Aguardando') && (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleToggleStatus(notificacao.id, 'Processada')}
+                              title="Marcar como Processada"
+                              className="h-8 w-8 text-green-600 hover:text-green-700 hover:bg-green-100"
+                            >
+                              <CheckCircle className="h-4 w-4" />
+                              <span className="sr-only">Marcar como Processada</span>
+                            </Button>
+                          )}
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleDelete(notificacao.id)}
+                            className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                            title="Excluir"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                            <span className="sr-only">Excluir</span>
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))
