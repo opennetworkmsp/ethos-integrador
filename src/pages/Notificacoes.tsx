@@ -42,6 +42,7 @@ interface Notificacao {
   descricao: string
   status: string
   created_at: string
+  processado_em?: string
   condominios?: {
     nome_condominio: string
   }
@@ -63,6 +64,7 @@ export default function Notificacoes() {
   const [isLoading, setIsLoading] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [search, setSearch] = useState('')
+  const [statusFilter, setStatusFilter] = useState<'Todas' | 'Aguardando' | 'Processada'>('Todas')
 
   const [condominioId, setCondominioId] = useState('')
   const [dataInfracao, setDataInfracao] = useState('')
@@ -144,10 +146,12 @@ export default function Notificacoes() {
   }
 
   const handleToggleStatus = async (id: string, newStatus: string) => {
-    const { error } = await supabase
-      .from('notificacoes')
-      .update({ status: newStatus } as any)
-      .eq('id', id)
+    const updateData: any = { status: newStatus }
+    if (newStatus === 'Processada') {
+      updateData.processado_em = new Date().toISOString()
+    }
+
+    const { error } = await supabase.from('notificacoes').update(updateData).eq('id', id)
 
     if (error) {
       toast({
@@ -158,7 +162,9 @@ export default function Notificacoes() {
     } else {
       toast({ title: 'Sucesso', description: `Notificação marcada como ${newStatus}.` })
       if (selectedNotificacao?.id === id) {
-        setSelectedNotificacao((prev) => (prev ? { ...prev, status: newStatus } : null))
+        setSelectedNotificacao((prev) =>
+          prev ? { ...prev, status: newStatus, processado_em: updateData.processado_em } : null,
+        )
       }
       fetchData()
     }
@@ -166,19 +172,31 @@ export default function Notificacoes() {
 
   const formatDate = (dateString: string) => {
     if (!dateString) return ''
-    const [year, month, day] = dateString.split('-')
+    const datePart = dateString.split('T')[0]
+    if (!datePart) return dateString
+    const [year, month, day] = datePart.split('-')
     if (year && month && day) return `${day}/${month}/${year}`
     return dateString
   }
 
+  const formatDateTime = (isoString?: string) => {
+    if (!isoString) return ''
+    const date = new Date(isoString)
+    return date.toLocaleString('pt-BR')
+  }
+
   const filteredNotificacoes = notificacoes.filter((n) => {
     const term = search.toLowerCase()
-    return (
+    const matchesSearch =
       n.condominios?.nome_condominio?.toLowerCase().includes(term) ||
       n.unidade.toLowerCase().includes(term) ||
       n.descricao.toLowerCase().includes(term) ||
       (n.status || 'Aguardando').toLowerCase().includes(term)
-    )
+
+    const matchesStatus =
+      statusFilter === 'Todas' ? true : (n.status || 'Aguardando') === statusFilter
+
+    return matchesSearch && matchesStatus
   })
 
   return (
@@ -278,9 +296,32 @@ export default function Notificacoes() {
       </div>
 
       <Card>
-        <CardHeader className="pb-3">
+        <CardHeader className="pb-3 space-y-4">
+          <CardTitle className="text-lg font-medium">Histórico de Ocorrências</CardTitle>
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-            <CardTitle className="text-lg font-medium">Histórico de Ocorrências</CardTitle>
+            <div className="flex flex-wrap items-center gap-2">
+              <Button
+                variant={statusFilter === 'Todas' ? 'default' : 'outline'}
+                onClick={() => setStatusFilter('Todas')}
+                size="sm"
+              >
+                Todas
+              </Button>
+              <Button
+                variant={statusFilter === 'Aguardando' ? 'default' : 'outline'}
+                onClick={() => setStatusFilter('Aguardando')}
+                size="sm"
+              >
+                Aguardando
+              </Button>
+              <Button
+                variant={statusFilter === 'Processada' ? 'default' : 'outline'}
+                onClick={() => setStatusFilter('Processada')}
+                size="sm"
+              >
+                Processadas
+              </Button>
+            </div>
             <div className="relative w-full sm:w-64">
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
@@ -415,6 +456,12 @@ export default function Notificacoes() {
                 {selectedNotificacao?.status || 'Aguardando'}
               </Badge>
             </div>
+            {selectedNotificacao?.processado_em && (
+              <div>
+                <h4 className="text-sm font-medium text-muted-foreground mb-1">Processado em</h4>
+                <p className="text-sm">{formatDateTime(selectedNotificacao.processado_em)}</p>
+              </div>
+            )}
             <div>
               <h4 className="text-sm font-medium text-muted-foreground mb-1">
                 Descrição da Infração
