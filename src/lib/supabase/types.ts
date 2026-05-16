@@ -220,6 +220,7 @@ export type Database = {
           data_infracao: string
           descricao: string
           id: string
+          status: string
           unidade: string
           user_id: string | null
         }
@@ -229,6 +230,7 @@ export type Database = {
           data_infracao: string
           descricao: string
           id?: string
+          status?: string
           unidade: string
           user_id?: string | null
         }
@@ -238,6 +240,7 @@ export type Database = {
           data_infracao?: string
           descricao?: string
           id?: string
+          status?: string
           unidade?: string
           user_id?: string | null
         }
@@ -491,6 +494,7 @@ export const Constants = {
 //   descricao: text (not null)
 //   user_id: uuid (nullable)
 //   created_at: timestamp with time zone (not null, default: now())
+//   status: text (not null, default: 'Aguardando'::text)
 // Table: profiles
 //   id: uuid (not null)
 //   email: text (not null)

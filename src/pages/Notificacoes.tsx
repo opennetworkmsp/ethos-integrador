@@ -31,7 +31,7 @@ import {
 } from '@/components/ui/dialog'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { useToast } from '@/hooks/use-toast'
-import { Plus, Search, Trash2, CheckCircle } from 'lucide-react'
+import { Plus, Search, Trash2, CheckCircle, Eye } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 
 interface Notificacao {
@@ -58,6 +58,8 @@ export default function Notificacoes() {
   const [condominios, setCondominios] = useState<Condominio[]>([])
   const [notificacoes, setNotificacoes] = useState<Notificacao[]>([])
   const [open, setOpen] = useState(false)
+  const [viewDialogOpen, setViewDialogOpen] = useState(false)
+  const [selectedNotificacao, setSelectedNotificacao] = useState<Notificacao | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [search, setSearch] = useState('')
@@ -155,6 +157,9 @@ export default function Notificacoes() {
       })
     } else {
       toast({ title: 'Sucesso', description: `Notificação marcada como ${newStatus}.` })
+      if (selectedNotificacao?.id === id) {
+        setSelectedNotificacao((prev) => (prev ? { ...prev, status: newStatus } : null))
+      }
       fetchData()
     }
   }
@@ -296,21 +301,20 @@ export default function Notificacoes() {
                   <TableHead className="w-[120px]">Data</TableHead>
                   <TableHead>Condomínio</TableHead>
                   <TableHead className="w-[100px]">Unidade</TableHead>
-                  <TableHead>Descrição</TableHead>
                   <TableHead className="w-[120px]">Status</TableHead>
-                  <TableHead className="w-[100px] text-right">Ações</TableHead>
+                  <TableHead className="w-[140px] text-right">Ações</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {isLoading ? (
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center h-24">
+                    <TableCell colSpan={5} className="text-center h-24">
                       Carregando notificações...
                     </TableCell>
                   </TableRow>
                 ) : filteredNotificacoes.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center h-24 text-muted-foreground">
+                    <TableCell colSpan={5} className="text-center h-24 text-muted-foreground">
                       Nenhuma notificação encontrada.
                     </TableCell>
                   </TableRow>
@@ -324,9 +328,6 @@ export default function Notificacoes() {
                         {notificacao.condominios?.nome_condominio || 'Condomínio não encontrado'}
                       </TableCell>
                       <TableCell>{notificacao.unidade}</TableCell>
-                      <TableCell className="max-w-[300px] truncate" title={notificacao.descricao}>
-                        {notificacao.descricao}
-                      </TableCell>
                       <TableCell>
                         <Badge
                           variant={notificacao.status === 'Processada' ? 'default' : 'secondary'}
@@ -341,6 +342,19 @@ export default function Notificacoes() {
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-1">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => {
+                              setSelectedNotificacao(notificacao)
+                              setViewDialogOpen(true)
+                            }}
+                            title="Visualizar Detalhes"
+                            className="h-8 w-8 text-blue-600 hover:text-blue-700 hover:bg-blue-100"
+                          >
+                            <Eye className="h-4 w-4" />
+                            <span className="sr-only">Visualizar Detalhes</span>
+                          </Button>
                           {(!notificacao.status || notificacao.status === 'Aguardando') && (
                             <Button
                               variant="ghost"
@@ -373,6 +387,61 @@ export default function Notificacoes() {
           </div>
         </CardContent>
       </Card>
+
+      <Dialog open={viewDialogOpen} onOpenChange={setViewDialogOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Detalhes da Notificação</DialogTitle>
+            <DialogDescription>
+              {selectedNotificacao?.condominios?.nome_condominio} - Unidade{' '}
+              {selectedNotificacao?.unidade}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4 space-y-4">
+            <div>
+              <h4 className="text-sm font-medium text-muted-foreground mb-1">Data da Infração</h4>
+              <p>{selectedNotificacao ? formatDate(selectedNotificacao.data_infracao) : ''}</p>
+            </div>
+            <div>
+              <h4 className="text-sm font-medium text-muted-foreground mb-1">Status</h4>
+              <Badge
+                variant={selectedNotificacao?.status === 'Processada' ? 'default' : 'secondary'}
+                className={
+                  selectedNotificacao?.status === 'Processada'
+                    ? 'bg-green-600 hover:bg-green-700'
+                    : 'bg-yellow-500 hover:bg-yellow-600 text-yellow-950'
+                }
+              >
+                {selectedNotificacao?.status || 'Aguardando'}
+              </Badge>
+            </div>
+            <div>
+              <h4 className="text-sm font-medium text-muted-foreground mb-1">
+                Descrição da Infração
+              </h4>
+              <div className="bg-muted p-3 rounded-md text-sm whitespace-pre-wrap">
+                {selectedNotificacao?.descricao}
+              </div>
+            </div>
+          </div>
+          <DialogFooter className="flex items-center justify-between sm:justify-between w-full">
+            <div>
+              {selectedNotificacao &&
+                (!selectedNotificacao.status || selectedNotificacao.status === 'Aguardando') && (
+                  <Button
+                    variant="outline"
+                    className="text-green-600 border-green-200 hover:bg-green-50"
+                    onClick={() => handleToggleStatus(selectedNotificacao.id, 'Processada')}
+                  >
+                    <CheckCircle className="mr-2 h-4 w-4" />
+                    Marcar Processada
+                  </Button>
+                )}
+            </div>
+            <Button onClick={() => setViewDialogOpen(false)}>Fechar</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
