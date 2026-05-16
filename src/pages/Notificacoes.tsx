@@ -31,7 +31,7 @@ import {
 } from '@/components/ui/dialog'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { useToast } from '@/hooks/use-toast'
-import { Plus, Search, Trash2, CheckCircle, Eye } from 'lucide-react'
+import { Plus, Search, Trash2, CheckCircle, Eye, Bot } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 
@@ -44,13 +44,16 @@ interface Notificacao {
   status: string
   created_at: string
   processado_em?: string
+  analise_ia?: string
   condominios?: {
     nome_condominio: string
+    id_condominio_externo: string
   }
 }
 
 interface Condominio {
   id_condominio_interno: string
+  id_condominio_externo: string
   nome_condominio: string
 }
 
@@ -61,6 +64,7 @@ export default function Notificacoes() {
   const [notificacoes, setNotificacoes] = useState<Notificacao[]>([])
   const [open, setOpen] = useState(false)
   const [viewDialogOpen, setViewDialogOpen] = useState(false)
+  const [iaDialogOpen, setIaDialogOpen] = useState(false)
   const [selectedNotificacao, setSelectedNotificacao] = useState<Notificacao | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
@@ -78,7 +82,7 @@ export default function Notificacoes() {
       supabase.from('condominios').select('*').order('nome_condominio'),
       supabase
         .from('notificacoes')
-        .select('*, condominios(nome_condominio)')
+        .select('*, condominios(nome_condominio, id_condominio_externo)')
         .order('created_at', { ascending: false }),
     ])
 
@@ -104,13 +108,17 @@ export default function Notificacoes() {
     }
 
     setIsSaving(true)
-    const { error } = await supabase.from('notificacoes').insert({
-      condominio_id: condominioId,
-      data_infracao: dataInfracao,
-      unidade,
-      descricao,
-      user_id: user?.id,
-    })
+    const { data: novaNotificacao, error } = await supabase
+      .from('notificacoes')
+      .insert({
+        condominio_id: condominioId,
+        data_infracao: dataInfracao,
+        unidade,
+        descricao,
+        user_id: user?.id,
+      })
+      .select()
+      .single()
     setIsSaving(false)
 
     if (error) {
@@ -127,6 +135,22 @@ export default function Notificacoes() {
       setUnidade('')
       setDescricao('')
       fetchData()
+
+      const condominioSelecionado = condominios.find(
+        (c) => c.id_condominio_interno === condominioId,
+      )
+      if (novaNotificacao && condominioSelecionado?.id_condominio_externo) {
+        supabase.functions
+          .invoke('n8n-webhook', {
+            body: {
+              action: 'analyze_notification',
+              id: novaNotificacao.id,
+              id_condominio_externo: condominioSelecionado.id_condominio_externo,
+              descricao: novaNotificacao.descricao,
+            },
+          })
+          .catch(console.error)
+      }
     }
   }
 
@@ -392,6 +416,21 @@ export default function Notificacoes() {
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-1">
+                          {notificacao.analise_ia && (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => {
+                                setSelectedNotificacao(notificacao)
+                                setIaDialogOpen(true)
+                              }}
+                              title="Ver Análise da IA"
+                              className="h-8 w-8 text-purple-600 hover:text-purple-700 hover:bg-purple-100"
+                            >
+                              <Bot className="h-4 w-4" />
+                              <span className="sr-only">Ver Análise da IA</span>
+                            </Button>
+                          )}
                           <Button
                             variant="ghost"
                             size="icon"
@@ -516,6 +555,28 @@ export default function Notificacoes() {
                 )}
             </div>
             <Button onClick={() => setViewDialogOpen(false)}>Fechar</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={iaDialogOpen} onOpenChange={setIaDialogOpen}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Bot className="h-5 w-5 text-purple-600" />
+              Análise da Inteligência Artificial
+            </DialogTitle>
+            <DialogDescription>
+              Embasamento legal encontrado nas convenções do condomínio.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4 space-y-4">
+            <div className="bg-muted p-4 rounded-md text-sm whitespace-pre-wrap max-h-[400px] overflow-y-auto">
+              {selectedNotificacao?.analise_ia}
+            </div>
+          </div>
+          <DialogFooter>
+            <Button onClick={() => setIaDialogOpen(false)}>Fechar</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
