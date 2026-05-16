@@ -190,8 +190,7 @@ export default function Notificacoes() {
     const matchesSearch =
       n.condominios?.nome_condominio?.toLowerCase().includes(term) ||
       n.unidade.toLowerCase().includes(term) ||
-      n.descricao.toLowerCase().includes(term) ||
-      (n.status || 'Aguardando').toLowerCase().includes(term)
+      n.descricao.toLowerCase().includes(term)
 
     const matchesStatus =
       statusFilter === 'Todas' ? true : (n.status || 'Aguardando') === statusFilter
@@ -326,8 +325,8 @@ export default function Notificacoes() {
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
                 type="search"
-                placeholder="Buscar registros..."
-                className="pl-8"
+                placeholder="Buscar por condomínio ou unidade..."
+                className="pl-8 bg-background w-full transition-all focus:w-full sm:focus:w-72"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
               />
