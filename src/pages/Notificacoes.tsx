@@ -33,6 +33,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { useToast } from '@/hooks/use-toast'
 import { Plus, Search, Trash2, CheckCircle, Eye } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 
 interface Notificacao {
   id: string
@@ -129,10 +130,19 @@ export default function Notificacoes() {
     }
   }
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (notificacao: Notificacao) => {
+    if (notificacao.status === 'Processada') {
+      toast({
+        title: 'Ação não permitida',
+        description: 'Registros processados não podem ser excluídos.',
+        variant: 'destructive',
+      })
+      return
+    }
+
     if (!confirm('Deseja realmente excluir esta notificação?')) return
 
-    const { error } = await supabase.from('notificacoes').delete().eq('id', id)
+    const { error } = await supabase.from('notificacoes').delete().eq('id', notificacao.id)
     if (error) {
       toast({
         title: 'Erro',
@@ -407,16 +417,37 @@ export default function Notificacoes() {
                               <span className="sr-only">Marcar como Processada</span>
                             </Button>
                           )}
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handleDelete(notificacao.id)}
-                            className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
-                            title="Excluir"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                            <span className="sr-only">Excluir</span>
-                          </Button>
+                          {notificacao.status === 'Processada' ? (
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <span tabIndex={0}>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    disabled
+                                    className="h-8 w-8 text-muted-foreground pointer-events-none"
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                    <span className="sr-only">Excluir (Bloqueado)</span>
+                                  </Button>
+                                </span>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>Registros processados não podem ser excluídos</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          ) : (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleDelete(notificacao)}
+                              className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                              title="Excluir"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                              <span className="sr-only">Excluir</span>
+                            </Button>
+                          )}
                         </div>
                       </TableCell>
                     </TableRow>
