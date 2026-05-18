@@ -4,7 +4,7 @@
     "manage-users": 16,
     "sendMessage": 16,
     "upload-files-agent": 7,
-    "chat-agent": 5,
+    "chat-agent": 6,
     "uploadDocument": 1
   }
 }
