@@ -1,10 +1,9 @@
 {
   "_versions": {
-    "n8n-webhook": 14,
-    "manage-users": 16,
-    "sendMessage": 16,
-    "upload-files-agent": 7,
-    "chat-agent": 6,
-    "uploadDocument": 1
+    "n8n-webhook": 13,
+    "manage-users": 15,
+    "sendMessage": 15,
+    "upload-files-agent": 6,
+    "chat-agent": 3
   }
 }
