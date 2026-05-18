@@ -4,7 +4,8 @@ import { createClient } from 'jsr:@supabase/supabase-js@2'
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, x-supabase-client-platform, apikey, content-type',
+  'Access-Control-Allow-Headers':
+    'authorization, x-client-info, x-supabase-client-platform, apikey, content-type',
 }
 
 Deno.serve(async (req: Request) => {
@@ -56,20 +57,21 @@ Deno.serve(async (req: Request) => {
       )
     }
 
-    const bodyPayload = action === 'analyze_notification'
-      ? {
-          action,
-          id,
-          id_condominio_externo,
-          descricao,
-          user_id: user.id,
-          timestamp: new Date().toISOString(),
-        }
-      : {
-          message,
-          user_id: user.id,
-          timestamp: new Date().toISOString(),
-        }
+    const bodyPayload =
+      action === 'analyze_notification'
+        ? {
+            action,
+            id,
+            id_condominio_externo,
+            descricao,
+            user_id: user.id,
+            timestamp: new Date().toISOString(),
+          }
+        : {
+            message,
+            user_id: user.id,
+            timestamp: new Date().toISOString(),
+          }
 
     const response = await fetch(webhookUrl, {
       method: 'POST',
