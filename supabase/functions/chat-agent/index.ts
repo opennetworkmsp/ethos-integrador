@@ -30,9 +30,9 @@ Deno.serve(async (req: Request) => {
     }
 
     const payload = await req.json()
-    const { message } = payload
+    const { message, action, id, id_condominio_externo, descricao } = payload
 
-    if (!message) {
+    if (!message && action !== 'analyze_notification') {
       throw new Error('Bad Request: Missing required field (message)')
     }
 
@@ -43,7 +43,7 @@ Deno.serve(async (req: Request) => {
       return new Response(
         JSON.stringify({
           success: true,
-          reply: `Esta é uma resposta simulada para: "${message}". Para o funcionamento real, configure N8N_WEBHOOK_CHAT nas variáveis de ambiente.`,
+          reply: `Esta é uma resposta simulada. Para o funcionamento real, configure N8N_WEBHOOK_CHAT nas variáveis de ambiente.`,
         }),
         {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -51,16 +51,28 @@ Deno.serve(async (req: Request) => {
       )
     }
 
+    const bodyPayload =
+      action === 'analyze_notification'
+        ? {
+            action,
+            id,
+            id_condominio_externo,
+            descricao,
+            user_id: user.id,
+            timestamp: new Date().toISOString(),
+          }
+        : {
+            message,
+            user_id: user.id,
+            timestamp: new Date().toISOString(),
+          }
+
     const response = await fetch(webhookUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        message,
-        user_id: user.id,
-        timestamp: new Date().toISOString(),
-      }),
+      body: JSON.stringify(bodyPayload),
     })
 
     const responseText = await response.text()

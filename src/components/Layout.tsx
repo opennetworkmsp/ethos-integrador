@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/hooks/use-auth'
 import {
@@ -37,7 +38,21 @@ import {
   SidebarRail,
   SidebarTrigger,
   SidebarInset,
+  useSidebar,
 } from '@/components/ui/sidebar'
+
+function MobileNavHandler() {
+  const { setOpenMobile, isMobile } = useSidebar()
+  const location = useLocation()
+
+  useEffect(() => {
+    if (isMobile) {
+      setOpenMobile(false)
+    }
+  }, [location.pathname, isMobile, setOpenMobile])
+
+  return null
+}
 
 export default function Layout() {
   const { user, profile, signOut } = useAuth()
@@ -61,6 +76,7 @@ export default function Layout() {
 
   return (
     <SidebarProvider>
+      <MobileNavHandler />
       <Sidebar>
         <SidebarHeader className="border-b p-4">
           <Link to="/" className="flex items-center gap-3 font-semibold px-2">

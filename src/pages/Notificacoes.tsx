@@ -141,7 +141,7 @@ export default function Notificacoes() {
       )
       if (novaNotificacao && condominioSelecionado?.id_condominio_externo) {
         supabase.functions
-          .invoke('n8n-webhook', {
+          .invoke('chat-agent', {
             body: {
               action: 'analyze_notification',
               id: novaNotificacao.id,
