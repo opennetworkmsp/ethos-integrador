@@ -143,7 +143,7 @@ export default function Notificacoes() {
         supabase.functions
           .invoke('chat-agent', {
             body: {
-              action: 'analyze_notification',
+              action: 'analise_ia_notificacao',
               id: novaNotificacao.id,
               id_condominio_externo: condominioSelecionado.id_condominio_externo,
               descricao: novaNotificacao.descricao,
