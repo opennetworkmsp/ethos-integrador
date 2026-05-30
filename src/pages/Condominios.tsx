@@ -274,8 +274,7 @@ export default function Condominios() {
           </p>
         </div>
         <Button variant="outline" onClick={() => setShowAuditoria(true)}>
-          <FileText className="mr-2 h-4 w-4" />
-          Histórico de Envios
+          Log-Envios
         </Button>
       </div>
 
