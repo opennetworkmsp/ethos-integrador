@@ -5,6 +5,7 @@
     "sendMessage": 19,
     "upload-files-agent": 10,
     "chat-agent": 10,
-    "uploadDocument": 4
+    "uploadDocument": 4,
+    "N8N_MENSAGEM_TESTE": 1
   }
 }
