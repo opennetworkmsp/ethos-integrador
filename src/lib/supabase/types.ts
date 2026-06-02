@@ -1,11 +1,17 @@
 // AVOID UPDATING THIS FILE DIRECTLY. It is automatically generated.
-export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[]
+export type Json =
+  | string
+  | number
+  | boolean
+  | null
+  | { [key: string]: Json | undefined }
+  | Json[]
 
 export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: '14.4'
+    PostgrestVersion: "14.4"
   }
   public: {
     Tables: {
@@ -17,6 +23,7 @@ export type Database = {
           link_boleto: string | null
           nome_cliente: string | null
           organizacao_id: string | null
+          status: string | null
           telefone_destino: string | null
           telefone_origem: string | null
           template_id: string | null
@@ -31,6 +38,7 @@ export type Database = {
           link_boleto?: string | null
           nome_cliente?: string | null
           organizacao_id?: string | null
+          status?: string | null
           telefone_destino?: string | null
           telefone_origem?: string | null
           template_id?: string | null
@@ -45,6 +53,7 @@ export type Database = {
           link_boleto?: string | null
           nome_cliente?: string | null
           organizacao_id?: string | null
+          status?: string | null
           telefone_destino?: string | null
           telefone_origem?: string | null
           template_id?: string | null
@@ -74,89 +83,166 @@ export type Database = {
       }
       convencoes_chunks: {
         Row: {
+          char_count: number | null
+          chunk_id: string | null
+          chunk_index: number | null
           content: string
           created_at: string | null
+          documento_id: string | null
           embedding: string | null
+          hash: string | null
           id: number
+          id_condominio_externo: string | null
+          id_condominio_interno: string | null
           metadata: Json
+          nome_condominio: string | null
+          pagina: number | null
+          processado_em: string | null
           updated_at: string | null
         }
         Insert: {
+          char_count?: number | null
+          chunk_id?: string | null
+          chunk_index?: number | null
           content: string
           created_at?: string | null
+          documento_id?: string | null
           embedding?: string | null
+          hash?: string | null
           id?: number
+          id_condominio_externo?: string | null
+          id_condominio_interno?: string | null
           metadata: Json
+          nome_condominio?: string | null
+          pagina?: number | null
+          processado_em?: string | null
           updated_at?: string | null
         }
         Update: {
+          char_count?: number | null
+          chunk_id?: string | null
+          chunk_index?: number | null
           content?: string
           created_at?: string | null
+          documento_id?: string | null
           embedding?: string | null
+          hash?: string | null
           id?: number
+          id_condominio_externo?: string | null
+          id_condominio_interno?: string | null
           metadata?: Json
+          nome_condominio?: string | null
+          pagina?: number | null
+          processado_em?: string | null
           updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "convencoes_chunks_documento_id_fkey"
+            columns: ["documento_id"]
+            isOneToOne: false
+            referencedRelation: "convencoes_documentos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      convencoes_documentos: {
+        Row: {
+          hash_documento: string
+          id: string
+          id_condominio_externo: string
+          id_condominio_interno: string
+          nome_arquivo: string
+          nome_condominio: string
+          status: string
+          submetido_em: string
+          submetido_por: string | null
+          total_chunks: number | null
+        }
+        Insert: {
+          hash_documento: string
+          id?: string
+          id_condominio_externo: string
+          id_condominio_interno: string
+          nome_arquivo: string
+          nome_condominio: string
+          status?: string
+          submetido_em?: string
+          submetido_por?: string | null
+          total_chunks?: number | null
+        }
+        Update: {
+          hash_documento?: string
+          id?: string
+          id_condominio_externo?: string
+          id_condominio_interno?: string
+          nome_arquivo?: string
+          nome_condominio?: string
+          status?: string
+          submetido_em?: string
+          submetido_por?: string | null
+          total_chunks?: number | null
         }
         Relationships: []
       }
       CRM_geral: {
         Row: {
-          'Data da consulta': string | null
-          'Follow UP 1': string | null
-          'Follow UP 2': string | null
-          'Follow UP 3': string | null
+          "Data da consulta": string | null
+          "Follow UP 1": string | null
+          "Follow UP 2": string | null
+          "Follow UP 3": string | null
           id_conversa: number
-          'IDConta ChatWoot': string | null
-          'IDConversa ChatWoot': string | null
-          'Identificador do usuario': string | null
-          'IDLead ChatWoot': string | null
-          'InboxID ChatWoot': string | null
-          'Inicio do atendimento': string | null
-          'Marcou no Grupo': string | null
+          "IDConta ChatWoot": string | null
+          "IDConversa ChatWoot": string | null
+          "Identificador do usuario": string | null
+          "IDLead ChatWoot": string | null
+          "InboxID ChatWoot": string | null
+          "Inicio do atendimento": string | null
+          "Marcou no Grupo": string | null
           Nome: string | null
           Procedimento: string | null
-          'Resumo da conversa': string | null
-          'Timestamp ultima msg': string | null
+          "Resumo da conversa": string | null
+          "Timestamp ultima msg": string | null
           Unidade: string | null
           Whatsapp: string | null
         }
         Insert: {
-          'Data da consulta'?: string | null
-          'Follow UP 1'?: string | null
-          'Follow UP 2'?: string | null
-          'Follow UP 3'?: string | null
+          "Data da consulta"?: string | null
+          "Follow UP 1"?: string | null
+          "Follow UP 2"?: string | null
+          "Follow UP 3"?: string | null
           id_conversa?: number
-          'IDConta ChatWoot'?: string | null
-          'IDConversa ChatWoot'?: string | null
-          'Identificador do usuario'?: string | null
-          'IDLead ChatWoot'?: string | null
-          'InboxID ChatWoot'?: string | null
-          'Inicio do atendimento'?: string | null
-          'Marcou no Grupo'?: string | null
+          "IDConta ChatWoot"?: string | null
+          "IDConversa ChatWoot"?: string | null
+          "Identificador do usuario"?: string | null
+          "IDLead ChatWoot"?: string | null
+          "InboxID ChatWoot"?: string | null
+          "Inicio do atendimento"?: string | null
+          "Marcou no Grupo"?: string | null
           Nome?: string | null
           Procedimento?: string | null
-          'Resumo da conversa'?: string | null
-          'Timestamp ultima msg'?: string | null
+          "Resumo da conversa"?: string | null
+          "Timestamp ultima msg"?: string | null
           Unidade?: string | null
           Whatsapp?: string | null
         }
         Update: {
-          'Data da consulta'?: string | null
-          'Follow UP 1'?: string | null
-          'Follow UP 2'?: string | null
-          'Follow UP 3'?: string | null
+          "Data da consulta"?: string | null
+          "Follow UP 1"?: string | null
+          "Follow UP 2"?: string | null
+          "Follow UP 3"?: string | null
           id_conversa?: number
-          'IDConta ChatWoot'?: string | null
-          'IDConversa ChatWoot'?: string | null
-          'Identificador do usuario'?: string | null
-          'IDLead ChatWoot'?: string | null
-          'InboxID ChatWoot'?: string | null
-          'Inicio do atendimento'?: string | null
-          'Marcou no Grupo'?: string | null
+          "IDConta ChatWoot"?: string | null
+          "IDConversa ChatWoot"?: string | null
+          "Identificador do usuario"?: string | null
+          "IDLead ChatWoot"?: string | null
+          "InboxID ChatWoot"?: string | null
+          "Inicio do atendimento"?: string | null
+          "Marcou no Grupo"?: string | null
           Nome?: string | null
           Procedimento?: string | null
-          'Resumo da conversa'?: string | null
-          'Timestamp ultima msg'?: string | null
+          "Resumo da conversa"?: string | null
+          "Timestamp ultima msg"?: string | null
           Unidade?: string | null
           Whatsapp?: string | null
         }
@@ -252,11 +338,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'notificacoes_condominio_id_fkey'
-            columns: ['condominio_id']
+            foreignKeyName: "notificacoes_condominio_id_fkey"
+            columns: ["condominio_id"]
             isOneToOne: false
-            referencedRelation: 'condominios'
-            referencedColumns: ['id_condominio_interno']
+            referencedRelation: "condominios"
+            referencedColumns: ["id_condominio_interno"]
           },
         ]
       }
@@ -305,31 +391,33 @@ export type Database = {
   }
 }
 
-type DatabaseWithoutInternals = Omit<Database, '__InternalSupabase'>
+type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
 
-type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, 'public'>]
+type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
 
 export type Tables<
   DefaultSchemaTableNameOrOptions extends
-    | keyof (DefaultSchema['Tables'] & DefaultSchema['Views'])
+    | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
     | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables'] &
-        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Views'])
+    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
     : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
-  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables'] &
-      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Views'])[TableName] extends {
+  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
       Row: infer R
     }
     ? R
     : never
-  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema['Tables'] & DefaultSchema['Views'])
-    ? (DefaultSchema['Tables'] & DefaultSchema['Views'])[DefaultSchemaTableNameOrOptions] extends {
+  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])
+    ? (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
         Row: infer R
       }
       ? R
@@ -338,23 +426,23 @@ export type Tables<
 
 export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
-    | keyof DefaultSchema['Tables']
+    | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables']
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
     : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
-  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables'][TableName] extends {
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
       Insert: infer I
     }
     ? I
     : never
-  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema['Tables']
-    ? DefaultSchema['Tables'][DefaultSchemaTableNameOrOptions] extends {
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
         Insert: infer I
       }
       ? I
@@ -363,23 +451,23 @@ export type TablesInsert<
 
 export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
-    | keyof DefaultSchema['Tables']
+    | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables']
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
     : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
-  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables'][TableName] extends {
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
       Update: infer U
     }
     ? U
     : never
-  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema['Tables']
-    ? DefaultSchema['Tables'][DefaultSchemaTableNameOrOptions] extends {
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
         Update: infer U
       }
       ? U
@@ -388,36 +476,36 @@ export type TablesUpdate<
 
 export type Enums<
   DefaultSchemaEnumNameOrOptions extends
-    | keyof DefaultSchema['Enums']
+    | keyof DefaultSchema["Enums"]
     | { schema: keyof DatabaseWithoutInternals },
   EnumName extends DefaultSchemaEnumNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions['schema']]['Enums']
+    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
     : never = never,
 > = DefaultSchemaEnumNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
-  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions['schema']]['Enums'][EnumName]
-  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema['Enums']
-    ? DefaultSchema['Enums'][DefaultSchemaEnumNameOrOptions]
+  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
+  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
+    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
     : never
 
 export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
-    | keyof DefaultSchema['CompositeTypes']
+    | keyof DefaultSchema["CompositeTypes"]
     | { schema: keyof DatabaseWithoutInternals },
   CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions['schema']]['CompositeTypes']
+    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
     : never = never,
 > = PublicCompositeTypeNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
-  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions['schema']]['CompositeTypes'][CompositeTypeName]
-  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema['CompositeTypes']
-    ? DefaultSchema['CompositeTypes'][PublicCompositeTypeNameOrOptions]
+  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
+    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
     : never
 
 export const Constants = {
@@ -425,6 +513,7 @@ export const Constants = {
     Enums: {},
   },
 } as const
+
 
 // ====== DATABASE EXTENDED CONTEXT (auto-generated) ======
 // This section contains actual PostgreSQL column types, constraints, RLS policies,
@@ -468,6 +557,7 @@ export const Constants = {
 //   unidade: text (nullable)
 //   created_at: timestamp with time zone (not null, default: now())
 //   user_id: uuid (nullable)
+//   status: text (nullable)
 // Table: condominios
 //   id_condominio_interno: text (not null)
 //   id_condominio_externo: text (not null)
@@ -479,6 +569,27 @@ export const Constants = {
 //   embedding: vector (nullable)
 //   created_at: timestamp with time zone (nullable, default: now())
 //   updated_at: timestamp with time zone (nullable, default: now())
+//   id_condominio_interno: text (nullable)
+//   id_condominio_externo: text (nullable)
+//   nome_condominio: text (nullable)
+//   chunk_id: text (nullable)
+//   hash: text (nullable)
+//   pagina: integer (nullable)
+//   chunk_index: integer (nullable)
+//   char_count: integer (nullable)
+//   processado_em: timestamp with time zone (nullable)
+//   documento_id: uuid (nullable)
+// Table: convencoes_documentos
+//   id: uuid (not null, default: gen_random_uuid())
+//   id_condominio_externo: text (not null)
+//   id_condominio_interno: text (not null)
+//   nome_condominio: text (not null)
+//   nome_arquivo: text (not null)
+//   hash_documento: text (not null)
+//   status: text (not null, default: 'processando'::text)
+//   total_chunks: integer (nullable)
+//   submetido_em: timestamp with time zone (not null, default: now())
+//   submetido_por: text (nullable)
 // Table: historico_infracoes
 //   id: integer (not null, default: nextval('historico_infracoes_id_seq'::regclass))
 //   nome_condominio: text (nullable)
@@ -514,11 +625,17 @@ export const Constants = {
 //   PRIMARY KEY CRM_geral_pkey: PRIMARY KEY (id_conversa)
 // Table: auditoria_mensagens
 //   PRIMARY KEY auditoria_mensagens_pkey: PRIMARY KEY (id)
+//   CHECK auditoria_mensagens_status_check: CHECK ((status = ANY (ARRAY['Sucesso'::text, 'Erro'::text])))
 //   FOREIGN KEY auditoria_mensagens_user_id_fkey: FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE SET NULL
 // Table: condominios
 //   PRIMARY KEY condominios_pkey: PRIMARY KEY (id_condominio_interno)
 // Table: convencoes_chunks
+//   FOREIGN KEY convencoes_chunks_documento_id_fkey: FOREIGN KEY (documento_id) REFERENCES convencoes_documentos(id) ON DELETE CASCADE
 //   PRIMARY KEY convencoes_chunks_pkey: PRIMARY KEY (id)
+//   UNIQUE uq_chunk_hash: UNIQUE (hash)
+// Table: convencoes_documentos
+//   PRIMARY KEY convencoes_documentos_pkey: PRIMARY KEY (id)
+//   UNIQUE uq_hash_documento: UNIQUE (hash_documento)
 // Table: historico_infracoes
 //   PRIMARY KEY historico_infracoes_pkey: PRIMARY KEY (id)
 // Table: n8n_chat_histories
@@ -628,7 +745,7 @@ export const Constants = {
 //     RETURN NEW;
 //   END;
 //   $function$
-//
+//   
 // FUNCTION match_documents(vector, integer, jsonb)
 //   CREATE OR REPLACE FUNCTION public.match_documents(query_embedding vector, match_count integer DEFAULT NULL::integer, filter jsonb DEFAULT '{}'::jsonb)
 //    RETURNS TABLE(id bigint, content text, metadata jsonb, similarity double precision)
@@ -648,7 +765,7 @@ export const Constants = {
 //     limit match_count;
 //   end;
 //   $function$
-//
+//   
 // FUNCTION update_updated_at_column()
 //   CREATE OR REPLACE FUNCTION public.update_updated_at_column()
 //    RETURNS trigger
@@ -659,7 +776,7 @@ export const Constants = {
 //       RETURN NEW;
 //   END;
 //   $function$
-//
+//   
 
 // --- TRIGGERS ---
 // Table: convencoes_chunks
@@ -667,5 +784,16 @@ export const Constants = {
 
 // --- INDEXES ---
 // Table: convencoes_chunks
+//   CREATE INDEX idx_chunks_content_gin ON public.convencoes_chunks USING gin (to_tsvector('portuguese'::regconfig, content))
+//   CREATE INDEX idx_chunks_documento_id ON public.convencoes_chunks USING btree (documento_id)
+//   CREATE INDEX idx_chunks_embedding ON public.convencoes_chunks USING ivfflat (embedding vector_cosine_ops) WITH (lists='100')
+//   CREATE INDEX idx_condo_externo ON public.convencoes_chunks USING btree (id_condominio_externo)
 //   CREATE INDEX idx_convencoes_chunks_embedding_ivfflat ON public.convencoes_chunks USING ivfflat (embedding vector_cosine_ops) WITH (lists='100')
 //   CREATE INDEX idx_convencoes_chunks_metadata_gin ON public.convencoes_chunks USING gin (metadata)
+//   CREATE UNIQUE INDEX uq_chunk_hash ON public.convencoes_chunks USING btree (hash)
+// Table: convencoes_documentos
+//   CREATE INDEX idx_docs_condo_externo ON public.convencoes_documentos USING btree (id_condominio_externo)
+//   CREATE INDEX idx_docs_condo_status ON public.convencoes_documentos USING btree (id_condominio_externo, status)
+//   CREATE INDEX idx_docs_status ON public.convencoes_documentos USING btree (status)
+//   CREATE UNIQUE INDEX uq_hash_documento ON public.convencoes_documentos USING btree (hash_documento)
+
