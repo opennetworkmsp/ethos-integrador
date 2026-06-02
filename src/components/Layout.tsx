@@ -11,6 +11,7 @@ import {
   BookOpen,
   Bot,
   ClipboardList,
+  Send,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
@@ -131,6 +132,14 @@ export default function Layout() {
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild isActive={location.pathname === '/disparo-teste'}>
+                    <Link to="/disparo-teste">
+                      <Send className="h-4 w-4" />
+                      <span>Disparo de Teste</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
@@ -216,11 +225,13 @@ export default function Layout() {
                     ? 'Assistente Virtual'
                     : location.pathname === '/notificacoes'
                       ? 'Registro de Notificações'
-                      : location.pathname === '/usuarios'
-                        ? 'Gestão de Usuários'
-                        : location.pathname === '/perfil'
-                          ? 'Meu Perfil'
-                          : ''}
+                      : location.pathname === '/disparo-teste'
+                        ? 'Disparo de Teste'
+                        : location.pathname === '/usuarios'
+                          ? 'Gestão de Usuários'
+                          : location.pathname === '/perfil'
+                            ? 'Meu Perfil'
+                            : ''}
           </h1>
         </header>
         <main className="flex-1 p-4 lg:p-6 overflow-auto">

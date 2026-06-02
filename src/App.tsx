@@ -13,6 +13,7 @@ import Perfil from './pages/Perfil'
 import BaseConhecimento from './pages/BaseConhecimento'
 import Assistente from './pages/Assistente'
 import Notificacoes from './pages/Notificacoes'
+import DisparoTeste from './pages/DisparoTeste'
 import Layout from './components/Layout'
 
 const App = () => (
@@ -31,6 +32,7 @@ const App = () => (
               <Route path="/base-conhecimento" element={<BaseConhecimento />} />
               <Route path="/assistente" element={<Assistente />} />
               <Route path="/notificacoes" element={<Notificacoes />} />
+              <Route path="/disparo-teste" element={<DisparoTeste />} />
               <Route path="/perfil" element={<Perfil />} />
             </Route>
 

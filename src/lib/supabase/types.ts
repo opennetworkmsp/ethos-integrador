@@ -1,17 +1,11 @@
 // AVOID UPDATING THIS FILE DIRECTLY. It is automatically generated.
-export type Json =
-  | string
-  | number
-  | boolean
-  | null
-  | { [key: string]: Json | undefined }
-  | Json[]
+export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[]
 
 export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.4"
+    PostgrestVersion: '14.4'
   }
   public: {
     Tables: {
@@ -138,11 +132,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "convencoes_chunks_documento_id_fkey"
-            columns: ["documento_id"]
+            foreignKeyName: 'convencoes_chunks_documento_id_fkey'
+            columns: ['documento_id']
             isOneToOne: false
-            referencedRelation: "convencoes_documentos"
-            referencedColumns: ["id"]
+            referencedRelation: 'convencoes_documentos'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -187,62 +181,62 @@ export type Database = {
       }
       CRM_geral: {
         Row: {
-          "Data da consulta": string | null
-          "Follow UP 1": string | null
-          "Follow UP 2": string | null
-          "Follow UP 3": string | null
+          'Data da consulta': string | null
+          'Follow UP 1': string | null
+          'Follow UP 2': string | null
+          'Follow UP 3': string | null
           id_conversa: number
-          "IDConta ChatWoot": string | null
-          "IDConversa ChatWoot": string | null
-          "Identificador do usuario": string | null
-          "IDLead ChatWoot": string | null
-          "InboxID ChatWoot": string | null
-          "Inicio do atendimento": string | null
-          "Marcou no Grupo": string | null
+          'IDConta ChatWoot': string | null
+          'IDConversa ChatWoot': string | null
+          'Identificador do usuario': string | null
+          'IDLead ChatWoot': string | null
+          'InboxID ChatWoot': string | null
+          'Inicio do atendimento': string | null
+          'Marcou no Grupo': string | null
           Nome: string | null
           Procedimento: string | null
-          "Resumo da conversa": string | null
-          "Timestamp ultima msg": string | null
+          'Resumo da conversa': string | null
+          'Timestamp ultima msg': string | null
           Unidade: string | null
           Whatsapp: string | null
         }
         Insert: {
-          "Data da consulta"?: string | null
-          "Follow UP 1"?: string | null
-          "Follow UP 2"?: string | null
-          "Follow UP 3"?: string | null
+          'Data da consulta'?: string | null
+          'Follow UP 1'?: string | null
+          'Follow UP 2'?: string | null
+          'Follow UP 3'?: string | null
           id_conversa?: number
-          "IDConta ChatWoot"?: string | null
-          "IDConversa ChatWoot"?: string | null
-          "Identificador do usuario"?: string | null
-          "IDLead ChatWoot"?: string | null
-          "InboxID ChatWoot"?: string | null
-          "Inicio do atendimento"?: string | null
-          "Marcou no Grupo"?: string | null
+          'IDConta ChatWoot'?: string | null
+          'IDConversa ChatWoot'?: string | null
+          'Identificador do usuario'?: string | null
+          'IDLead ChatWoot'?: string | null
+          'InboxID ChatWoot'?: string | null
+          'Inicio do atendimento'?: string | null
+          'Marcou no Grupo'?: string | null
           Nome?: string | null
           Procedimento?: string | null
-          "Resumo da conversa"?: string | null
-          "Timestamp ultima msg"?: string | null
+          'Resumo da conversa'?: string | null
+          'Timestamp ultima msg'?: string | null
           Unidade?: string | null
           Whatsapp?: string | null
         }
         Update: {
-          "Data da consulta"?: string | null
-          "Follow UP 1"?: string | null
-          "Follow UP 2"?: string | null
-          "Follow UP 3"?: string | null
+          'Data da consulta'?: string | null
+          'Follow UP 1'?: string | null
+          'Follow UP 2'?: string | null
+          'Follow UP 3'?: string | null
           id_conversa?: number
-          "IDConta ChatWoot"?: string | null
-          "IDConversa ChatWoot"?: string | null
-          "Identificador do usuario"?: string | null
-          "IDLead ChatWoot"?: string | null
-          "InboxID ChatWoot"?: string | null
-          "Inicio do atendimento"?: string | null
-          "Marcou no Grupo"?: string | null
+          'IDConta ChatWoot'?: string | null
+          'IDConversa ChatWoot'?: string | null
+          'Identificador do usuario'?: string | null
+          'IDLead ChatWoot'?: string | null
+          'InboxID ChatWoot'?: string | null
+          'Inicio do atendimento'?: string | null
+          'Marcou no Grupo'?: string | null
           Nome?: string | null
           Procedimento?: string | null
-          "Resumo da conversa"?: string | null
-          "Timestamp ultima msg"?: string | null
+          'Resumo da conversa'?: string | null
+          'Timestamp ultima msg'?: string | null
           Unidade?: string | null
           Whatsapp?: string | null
         }
@@ -338,11 +332,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "notificacoes_condominio_id_fkey"
-            columns: ["condominio_id"]
+            foreignKeyName: 'notificacoes_condominio_id_fkey'
+            columns: ['condominio_id']
             isOneToOne: false
-            referencedRelation: "condominios"
-            referencedColumns: ["id_condominio_interno"]
+            referencedRelation: 'condominios'
+            referencedColumns: ['id_condominio_interno']
           },
         ]
       }
@@ -391,33 +385,31 @@ export type Database = {
   }
 }
 
-type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
+type DatabaseWithoutInternals = Omit<Database, '__InternalSupabase'>
 
-type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
+type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, 'public'>]
 
 export type Tables<
   DefaultSchemaTableNameOrOptions extends
-    | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
+    | keyof (DefaultSchema['Tables'] & DefaultSchema['Views'])
     | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
-        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
+    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables'] &
+        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Views'])
     : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
-  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
-      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables'] &
+      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Views'])[TableName] extends {
       Row: infer R
     }
     ? R
     : never
-  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
-        DefaultSchema["Views"])
-    ? (DefaultSchema["Tables"] &
-        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
+  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema['Tables'] & DefaultSchema['Views'])
+    ? (DefaultSchema['Tables'] & DefaultSchema['Views'])[DefaultSchemaTableNameOrOptions] extends {
         Row: infer R
       }
       ? R
@@ -426,23 +418,23 @@ export type Tables<
 
 export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
-    | keyof DefaultSchema["Tables"]
+    | keyof DefaultSchema['Tables']
     | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables']
     : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
-  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables'][TableName] extends {
       Insert: infer I
     }
     ? I
     : never
-  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
-    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema['Tables']
+    ? DefaultSchema['Tables'][DefaultSchemaTableNameOrOptions] extends {
         Insert: infer I
       }
       ? I
@@ -451,23 +443,23 @@ export type TablesInsert<
 
 export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
-    | keyof DefaultSchema["Tables"]
+    | keyof DefaultSchema['Tables']
     | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables']
     : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
-  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables'][TableName] extends {
       Update: infer U
     }
     ? U
     : never
-  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
-    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema['Tables']
+    ? DefaultSchema['Tables'][DefaultSchemaTableNameOrOptions] extends {
         Update: infer U
       }
       ? U
@@ -476,36 +468,36 @@ export type TablesUpdate<
 
 export type Enums<
   DefaultSchemaEnumNameOrOptions extends
-    | keyof DefaultSchema["Enums"]
+    | keyof DefaultSchema['Enums']
     | { schema: keyof DatabaseWithoutInternals },
   EnumName extends DefaultSchemaEnumNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
+    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions['schema']]['Enums']
     : never = never,
 > = DefaultSchemaEnumNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
-  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
-  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
-    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
+  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions['schema']]['Enums'][EnumName]
+  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema['Enums']
+    ? DefaultSchema['Enums'][DefaultSchemaEnumNameOrOptions]
     : never
 
 export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
-    | keyof DefaultSchema["CompositeTypes"]
+    | keyof DefaultSchema['CompositeTypes']
     | { schema: keyof DatabaseWithoutInternals },
   CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions['schema']]['CompositeTypes']
     : never = never,
 > = PublicCompositeTypeNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
-  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
-  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
-    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
+  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions['schema']]['CompositeTypes'][CompositeTypeName]
+  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema['CompositeTypes']
+    ? DefaultSchema['CompositeTypes'][PublicCompositeTypeNameOrOptions]
     : never
 
 export const Constants = {
@@ -513,7 +505,6 @@ export const Constants = {
     Enums: {},
   },
 } as const
-
 
 // ====== DATABASE EXTENDED CONTEXT (auto-generated) ======
 // This section contains actual PostgreSQL column types, constraints, RLS policies,
@@ -745,7 +736,7 @@ export const Constants = {
 //     RETURN NEW;
 //   END;
 //   $function$
-//   
+//
 // FUNCTION match_documents(vector, integer, jsonb)
 //   CREATE OR REPLACE FUNCTION public.match_documents(query_embedding vector, match_count integer DEFAULT NULL::integer, filter jsonb DEFAULT '{}'::jsonb)
 //    RETURNS TABLE(id bigint, content text, metadata jsonb, similarity double precision)
@@ -765,7 +756,7 @@ export const Constants = {
 //     limit match_count;
 //   end;
 //   $function$
-//   
+//
 // FUNCTION update_updated_at_column()
 //   CREATE OR REPLACE FUNCTION public.update_updated_at_column()
 //    RETURNS trigger
@@ -776,7 +767,7 @@ export const Constants = {
 //       RETURN NEW;
 //   END;
 //   $function$
-//   
+//
 
 // --- TRIGGERS ---
 // Table: convencoes_chunks
@@ -796,4 +787,3 @@ export const Constants = {
 //   CREATE INDEX idx_docs_condo_status ON public.convencoes_documentos USING btree (id_condominio_externo, status)
 //   CREATE INDEX idx_docs_status ON public.convencoes_documentos USING btree (status)
 //   CREATE UNIQUE INDEX uq_hash_documento ON public.convencoes_documentos USING btree (hash_documento)
-
