@@ -47,7 +47,7 @@ export default function DisparoTeste() {
           </CardTitle>
           <CardDescription>
             Envie uma mensagem de teste para um número de telefone específico para validar a
-            integração com o n8n.
+            integração e template.
           </CardDescription>
         </CardHeader>
         <CardContent>
