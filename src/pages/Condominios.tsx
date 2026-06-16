@@ -196,7 +196,7 @@ export default function Condominios() {
     return pages
   }
 
-  const PREVIEW_ITEMS_PER_PAGE = 20
+  const PREVIEW_ITEMS_PER_PAGE = 5
   const previewTotalPages = Math.ceil(previewData.length / PREVIEW_ITEMS_PER_PAGE)
   const paginatedPreview = previewData.slice(
     (previewPage - 1) * PREVIEW_ITEMS_PER_PAGE,
@@ -683,7 +683,7 @@ export default function Condominios() {
           </div>
 
           <div className="flex flex-col gap-4 pt-4 border-t shrink-0 mt-2">
-            {previewData.length > 0 && previewTotalPages > 1 && (
+            {previewData.length > 0 && (
               <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
                 <p className="text-sm text-muted-foreground whitespace-nowrap">
                   Mostrando {(previewPage - 1) * PREVIEW_ITEMS_PER_PAGE + 1} até{' '}
