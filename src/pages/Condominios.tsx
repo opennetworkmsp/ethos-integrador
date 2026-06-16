@@ -613,7 +613,7 @@ export default function Condominios() {
               </div>
             ) : (
               <div className="flex flex-col h-full space-y-4">
-                <div className="rounded-md border flex-1 overflow-auto">
+                <ScrollArea className="rounded-md border flex-1 max-h-[60vh]">
                   <Table>
                     <TableHeader className="sticky top-0 bg-background z-10 shadow-sm ring-1 ring-border">
                       <TableRow>
@@ -654,7 +654,7 @@ export default function Condominios() {
                       ))}
                     </TableBody>
                   </Table>
-                </div>
+                </ScrollArea>
 
                 {previewTotalPages > 1 && (
                   <div className="flex flex-col sm:flex-row justify-between items-center px-2 pt-2 border-t mt-2 gap-4 shrink-0">
