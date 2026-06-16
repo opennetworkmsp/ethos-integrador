@@ -595,14 +595,14 @@ export default function Condominios() {
 
       <Dialog open={showPreviewResult} onOpenChange={setShowPreviewResult}>
         <DialogContent className="sm:max-w-[800px] max-h-[90vh] flex flex-col">
-          <DialogHeader>
+          <DialogHeader className="shrink-0">
             <DialogTitle>Resultado da Prévia</DialogTitle>
             <DialogDescription>
               Total de registros encontrados: <strong>{previewData.length}</strong>
             </DialogDescription>
           </DialogHeader>
 
-          <div className="flex-1 overflow-hidden flex flex-col min-h-[300px] mt-4">
+          <div className="flex-1 overflow-hidden flex flex-col min-h-[300px] mt-2">
             {previewData.length === 0 ? (
               <div className="flex flex-col flex-1 items-center justify-center text-center">
                 <FileText className="h-12 w-12 text-muted-foreground/50 mb-4" />
@@ -612,7 +612,7 @@ export default function Condominios() {
                 </p>
               </div>
             ) : (
-              <div className="flex flex-col h-full space-y-4">
+              <div className="flex flex-col h-full overflow-hidden">
                 <ScrollArea className="rounded-md border flex-1 max-h-[60vh]">
                   <Table>
                     <TableHeader className="sticky top-0 bg-background z-10 shadow-sm ring-1 ring-border">
@@ -655,64 +655,62 @@ export default function Condominios() {
                     </TableBody>
                   </Table>
                 </ScrollArea>
-
-                {previewTotalPages > 1 && (
-                  <div className="flex flex-col sm:flex-row justify-between items-center px-2 pt-2 border-t mt-2 gap-4 shrink-0">
-                    <p className="text-sm text-muted-foreground whitespace-nowrap">
-                      Mostrando {(previewPage - 1) * PREVIEW_ITEMS_PER_PAGE + 1} até{' '}
-                      {Math.min(previewPage * PREVIEW_ITEMS_PER_PAGE, previewData.length)} de{' '}
-                      {previewData.length}
-                    </p>
-                    <Pagination className="justify-end m-0 w-auto">
-                      <PaginationContent>
-                        <PaginationItem>
-                          <PaginationPrevious
-                            onClick={() => setPreviewPage(Math.max(1, previewPage - 1))}
-                            className={
-                              previewPage === 1
-                                ? 'pointer-events-none opacity-50'
-                                : 'cursor-pointer'
-                            }
-                          />
-                        </PaginationItem>
-
-                        {getPreviewPageNumbers().map((page, i) => (
-                          <PaginationItem key={i} className="hidden sm:inline-block">
-                            {page === '...' ? (
-                              <PaginationEllipsis />
-                            ) : (
-                              <PaginationLink
-                                onClick={() => setPreviewPage(page as number)}
-                                isActive={previewPage === page}
-                                className="cursor-pointer"
-                              >
-                                {page}
-                              </PaginationLink>
-                            )}
-                          </PaginationItem>
-                        ))}
-
-                        <PaginationItem>
-                          <PaginationNext
-                            onClick={() =>
-                              setPreviewPage(Math.min(previewTotalPages, previewPage + 1))
-                            }
-                            className={
-                              previewPage >= previewTotalPages
-                                ? 'pointer-events-none opacity-50'
-                                : 'cursor-pointer'
-                            }
-                          />
-                        </PaginationItem>
-                      </PaginationContent>
-                    </Pagination>
-                  </div>
-                )}
               </div>
             )}
           </div>
-          <div className="flex justify-end pt-4 border-t">
-            <Button onClick={() => setShowPreviewResult(false)}>Fechar</Button>
+
+          <div className="flex flex-col gap-4 pt-4 border-t shrink-0 mt-2">
+            {previewData.length > 0 && previewTotalPages > 1 && (
+              <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+                <p className="text-sm text-muted-foreground whitespace-nowrap">
+                  Mostrando {(previewPage - 1) * PREVIEW_ITEMS_PER_PAGE + 1} até{' '}
+                  {Math.min(previewPage * PREVIEW_ITEMS_PER_PAGE, previewData.length)} de{' '}
+                  {previewData.length}
+                </p>
+                <Pagination className="justify-end m-0 w-auto">
+                  <PaginationContent>
+                    <PaginationItem>
+                      <PaginationPrevious
+                        onClick={() => setPreviewPage(Math.max(1, previewPage - 1))}
+                        className={
+                          previewPage === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'
+                        }
+                      />
+                    </PaginationItem>
+
+                    {getPreviewPageNumbers().map((page, i) => (
+                      <PaginationItem key={i} className="hidden sm:inline-block">
+                        {page === '...' ? (
+                          <PaginationEllipsis />
+                        ) : (
+                          <PaginationLink
+                            onClick={() => setPreviewPage(page as number)}
+                            isActive={previewPage === page}
+                            className="cursor-pointer"
+                          >
+                            {page}
+                          </PaginationLink>
+                        )}
+                      </PaginationItem>
+                    ))}
+
+                    <PaginationItem>
+                      <PaginationNext
+                        onClick={() => setPreviewPage(Math.min(previewTotalPages, previewPage + 1))}
+                        className={
+                          previewPage >= previewTotalPages
+                            ? 'pointer-events-none opacity-50'
+                            : 'cursor-pointer'
+                        }
+                      />
+                    </PaginationItem>
+                  </PaginationContent>
+                </Pagination>
+              </div>
+            )}
+            <div className="flex justify-end">
+              <Button onClick={() => setShowPreviewResult(false)}>Fechar</Button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>
