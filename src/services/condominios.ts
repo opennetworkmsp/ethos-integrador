@@ -36,3 +36,11 @@ export const triggerN8nWebhook = async (payload: any) => {
   if (error) throw error
   return data
 }
+
+export const triggerCobrancaPrevia = async (payload: any) => {
+  const { data, error } = await supabase.functions.invoke('N8N_WEBHOOK_COBRANCAPREVIA', {
+    body: payload,
+  })
+  if (error) throw error
+  return data
+}

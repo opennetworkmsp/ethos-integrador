@@ -1,5 +1,10 @@
 import { useEffect, useState } from 'react'
-import { getCondominios, Condominio, triggerN8nWebhook } from '@/services/condominios'
+import {
+  getCondominios,
+  Condominio,
+  triggerN8nWebhook,
+  triggerCobrancaPrevia,
+} from '@/services/condominios'
 import { searchAuditoriaMensagens, AuditoriaMensagem } from '@/services/auditoria'
 import {
   Table,
@@ -59,6 +64,11 @@ export default function Condominios() {
   const [dataInicio, setDataInicio] = useState('')
   const [dataFim, setDataFim] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
+
+  const [isPreviewMode, setIsPreviewMode] = useState(false)
+  const [showPreviewResult, setShowPreviewResult] = useState(false)
+  const [previewData, setPreviewData] = useState<any[]>([])
+  const [previewPage, setPreviewPage] = useState(1)
 
   const [showAuditoria, setShowAuditoria] = useState(false)
   const [auditoriaLogs, setAuditoriaLogs] = useState<AuditoriaMensagem[]>([])
@@ -186,6 +196,44 @@ export default function Condominios() {
     return pages
   }
 
+  const PREVIEW_ITEMS_PER_PAGE = 20
+  const previewTotalPages = Math.ceil(previewData.length / PREVIEW_ITEMS_PER_PAGE)
+  const paginatedPreview = previewData.slice(
+    (previewPage - 1) * PREVIEW_ITEMS_PER_PAGE,
+    previewPage * PREVIEW_ITEMS_PER_PAGE,
+  )
+
+  const getPreviewPageNumbers = () => {
+    const pages: (number | string)[] = []
+    if (previewTotalPages <= 7) {
+      for (let i = 1; i <= previewTotalPages; i++) pages.push(i)
+    } else {
+      if (previewPage <= 3) {
+        pages.push(1, 2, 3, 4, '...', previewTotalPages)
+      } else if (previewPage >= previewTotalPages - 2) {
+        pages.push(
+          1,
+          '...',
+          previewTotalPages - 3,
+          previewTotalPages - 2,
+          previewTotalPages - 1,
+          previewTotalPages,
+        )
+      } else {
+        pages.push(
+          1,
+          '...',
+          previewPage - 1,
+          previewPage,
+          previewPage + 1,
+          '...',
+          previewTotalPages,
+        )
+      }
+    }
+    return pages
+  }
+
   const handleExportCSV = () => {
     if (auditoriaLogs.length === 0) return
     const headers = ['Data', 'Cliente', 'Unidade', 'Condomínio', 'Telefone', 'Link Boleto']
@@ -244,20 +292,32 @@ export default function Condominios() {
         data_fim: formatToMMDDYYYY(dataFim),
       }
 
-      await triggerN8nWebhook(payload)
+      if (isPreviewMode) {
+        const response = await triggerCobrancaPrevia(payload)
+        const dataArray = Array.isArray(response?.data)
+          ? response.data
+          : response?.data?.data
+            ? response.data.data
+            : []
+        setPreviewData(dataArray)
+        setPreviewPage(1)
+        setShowPreviewResult(true)
+      } else {
+        await triggerN8nWebhook(payload)
 
-      toast.success('Registro disparado com sucesso!', {
-        description: `Os dados do condomínio ${selectedCondominio.nome_condominio} foram enviados para o N8N.`,
-      })
+        toast.success('Registro disparado com sucesso!', {
+          description: `Os dados do condomínio ${selectedCondominio.nome_condominio} foram enviados para o N8N.`,
+        })
 
-      setSelectedCondominio(null)
-      if (showAuditoria && hasSearched) {
-        handleSearchAuditoria(1)
+        setSelectedCondominio(null)
+        if (showAuditoria && hasSearched) {
+          handleSearchAuditoria(1)
+        }
       }
     } catch (error) {
       console.error('Erro ao disparar Eventos:', error)
-      toast.error('Erro ao disparar Eventos', {
-        description: 'Ocorreu um erro ao enviar os dados para o servidor.',
+      toast.error(isPreviewMode ? 'Erro ao buscar prévia' : 'Erro ao disparar Eventos', {
+        description: 'Ocorreu um erro ao comunicar com o servidor.',
       })
     } finally {
       setIsSending(false)
@@ -323,11 +383,24 @@ export default function Condominios() {
                         <TableCell className="font-medium">{condominio.nome_condominio}</TableCell>
                         <TableCell>{condominio.id_condominio_interno}</TableCell>
                         <TableCell>{condominio.id_condominio_externo}</TableCell>
-                        <TableCell className="text-right">
+                        <TableCell className="text-right space-x-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              setIsPreviewMode(true)
+                              setSelectedCondominio(condominio)
+                            }}
+                          >
+                            Prévia
+                          </Button>
                           <Button
                             variant="secondary"
                             size="sm"
-                            onClick={() => setSelectedCondominio(condominio)}
+                            onClick={() => {
+                              setIsPreviewMode(false)
+                              setSelectedCondominio(condominio)
+                            }}
                           >
                             Visualizar e Disparar
                           </Button>
@@ -391,19 +464,26 @@ export default function Condominios() {
       </Card>
 
       <Dialog
-        open={!!selectedCondominio}
+        open={!!selectedCondominio && !showPreviewResult}
         onOpenChange={(open) => {
           if (!open) {
             setSelectedCondominio(null)
             setDataInicio('')
             setDataFim('')
+            setIsPreviewMode(false)
           }
         }}
       >
         <DialogContent className="sm:max-w-[600px]">
           <DialogHeader>
-            <DialogTitle>Detalhes para Disparo</DialogTitle>
-            <DialogDescription>Revise os dados antes de disparar o evento</DialogDescription>
+            <DialogTitle>
+              {isPreviewMode ? 'Prévia de Cobrança' : 'Detalhes para Disparo'}
+            </DialogTitle>
+            <DialogDescription>
+              {isPreviewMode
+                ? 'Selecione as datas para buscar a prévia dos registros'
+                : 'Revise os dados antes de disparar o evento'}
+            </DialogDescription>
           </DialogHeader>
 
           {selectedCondominio && (
@@ -481,7 +561,10 @@ export default function Condominios() {
               <div className="flex justify-end gap-3 pt-4">
                 <Button
                   variant="outline"
-                  onClick={() => setSelectedCondominio(null)}
+                  onClick={() => {
+                    setSelectedCondominio(null)
+                    setIsPreviewMode(false)
+                  }}
                   disabled={isSending}
                 >
                   Cancelar
@@ -490,7 +573,12 @@ export default function Condominios() {
                   {isSending ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Enviando...
+                      {isPreviewMode ? 'Buscando...' : 'Enviando...'}
+                    </>
+                  ) : isPreviewMode ? (
+                    <>
+                      <Search className="mr-2 h-4 w-4" />
+                      Buscar Prévia
                     </>
                   ) : (
                     <>
@@ -502,6 +590,130 @@ export default function Condominios() {
               </div>
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showPreviewResult} onOpenChange={setShowPreviewResult}>
+        <DialogContent className="sm:max-w-[800px] max-h-[90vh] flex flex-col">
+          <DialogHeader>
+            <DialogTitle>Resultado da Prévia</DialogTitle>
+            <DialogDescription>
+              Total de registros encontrados: <strong>{previewData.length}</strong>
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="flex-1 overflow-hidden flex flex-col min-h-[300px] mt-4">
+            {previewData.length === 0 ? (
+              <div className="flex flex-col flex-1 items-center justify-center text-center">
+                <FileText className="h-12 w-12 text-muted-foreground/50 mb-4" />
+                <h3 className="text-lg font-medium">Nenhum registro retornado</h3>
+                <p className="text-sm text-muted-foreground">
+                  O webhook não retornou dados para este período.
+                </p>
+              </div>
+            ) : (
+              <div className="flex flex-col h-full space-y-4">
+                <div className="rounded-md border flex-1 overflow-auto">
+                  <Table>
+                    <TableHeader className="sticky top-0 bg-background z-10 shadow-sm ring-1 ring-border">
+                      <TableRow>
+                        <TableHead>Nome</TableHead>
+                        <TableHead>Unidade</TableHead>
+                        <TableHead>Telefone</TableHead>
+                        <TableHead>Vencimento</TableHead>
+                        <TableHead className="text-right">Valor</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {paginatedPreview.map((item, idx) => (
+                        <TableRow key={idx}>
+                          <TableCell className="font-medium text-sm">
+                            {item.NomeCliente || item.nome_cliente || item.Nome || item.nome || '-'}
+                          </TableCell>
+                          <TableCell className="text-sm">
+                            {item.Unidade || item.unidade || '-'}
+                          </TableCell>
+                          <TableCell className="text-sm">
+                            {item.Telefone ||
+                              item.telefone ||
+                              item.TelefoneDestino ||
+                              item.telefone_destino ||
+                              '-'}
+                          </TableCell>
+                          <TableCell className="text-sm">
+                            {item.Vencimento ||
+                              item.vencimento ||
+                              item.DataVencimento ||
+                              item.data_vencimento ||
+                              '-'}
+                          </TableCell>
+                          <TableCell className="text-right text-sm">
+                            {item.Valor || item.valor || '-'}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+
+                {previewTotalPages > 1 && (
+                  <div className="flex flex-col sm:flex-row justify-between items-center px-2 pt-2 border-t mt-2 gap-4 shrink-0">
+                    <p className="text-sm text-muted-foreground whitespace-nowrap">
+                      Mostrando {(previewPage - 1) * PREVIEW_ITEMS_PER_PAGE + 1} até{' '}
+                      {Math.min(previewPage * PREVIEW_ITEMS_PER_PAGE, previewData.length)} de{' '}
+                      {previewData.length}
+                    </p>
+                    <Pagination className="justify-end m-0 w-auto">
+                      <PaginationContent>
+                        <PaginationItem>
+                          <PaginationPrevious
+                            onClick={() => setPreviewPage(Math.max(1, previewPage - 1))}
+                            className={
+                              previewPage === 1
+                                ? 'pointer-events-none opacity-50'
+                                : 'cursor-pointer'
+                            }
+                          />
+                        </PaginationItem>
+
+                        {getPreviewPageNumbers().map((page, i) => (
+                          <PaginationItem key={i} className="hidden sm:inline-block">
+                            {page === '...' ? (
+                              <PaginationEllipsis />
+                            ) : (
+                              <PaginationLink
+                                onClick={() => setPreviewPage(page as number)}
+                                isActive={previewPage === page}
+                                className="cursor-pointer"
+                              >
+                                {page}
+                              </PaginationLink>
+                            )}
+                          </PaginationItem>
+                        ))}
+
+                        <PaginationItem>
+                          <PaginationNext
+                            onClick={() =>
+                              setPreviewPage(Math.min(previewTotalPages, previewPage + 1))
+                            }
+                            className={
+                              previewPage >= previewTotalPages
+                                ? 'pointer-events-none opacity-50'
+                                : 'cursor-pointer'
+                            }
+                          />
+                        </PaginationItem>
+                      </PaginationContent>
+                    </Pagination>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+          <div className="flex justify-end pt-4 border-t">
+            <Button onClick={() => setShowPreviewResult(false)}>Fechar</Button>
+          </div>
         </DialogContent>
       </Dialog>
 

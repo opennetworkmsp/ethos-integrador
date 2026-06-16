@@ -78,10 +78,9 @@ export type Database = {
       convencoes_chunks: {
         Row: {
           char_count: number | null
-          chunk_id: string | null
           chunk_index: number | null
           content: string
-          created_at: string | null
+          created_at: string
           documento_id: string | null
           embedding: string | null
           hash: string | null
@@ -92,32 +91,13 @@ export type Database = {
           nome_condominio: string | null
           pagina: number | null
           processado_em: string | null
-          updated_at: string | null
+          updated_at: string
         }
         Insert: {
           char_count?: number | null
-          chunk_id?: string | null
           chunk_index?: number | null
           content: string
-          created_at?: string | null
-          documento_id?: string | null
-          embedding?: string | null
-          hash?: string | null
-          id?: number
-          id_condominio_externo?: string | null
-          id_condominio_interno?: string | null
-          metadata: Json
-          nome_condominio?: string | null
-          pagina?: number | null
-          processado_em?: string | null
-          updated_at?: string | null
-        }
-        Update: {
-          char_count?: number | null
-          chunk_id?: string | null
-          chunk_index?: number | null
-          content?: string
-          created_at?: string | null
+          created_at?: string
           documento_id?: string | null
           embedding?: string | null
           hash?: string | null
@@ -128,7 +108,24 @@ export type Database = {
           nome_condominio?: string | null
           pagina?: number | null
           processado_em?: string | null
-          updated_at?: string | null
+          updated_at?: string
+        }
+        Update: {
+          char_count?: number | null
+          chunk_index?: number | null
+          content?: string
+          created_at?: string
+          documento_id?: string | null
+          embedding?: string | null
+          hash?: string | null
+          id?: number
+          id_condominio_externo?: string | null
+          id_condominio_interno?: string | null
+          metadata?: Json
+          nome_condominio?: string | null
+          pagina?: number | null
+          processado_em?: string | null
+          updated_at?: string
         }
         Relationships: [
           {
@@ -375,6 +372,8 @@ export type Database = {
           similarity: number
         }[]
       }
+      show_limit: { Args: never; Returns: number }
+      show_trgm: { Args: { '': string }; Returns: string[] }
     }
     Enums: {
       [_ in never]: never
@@ -556,20 +555,19 @@ export const Constants = {
 // Table: convencoes_chunks
 //   id: bigint (not null, default: nextval('convencoes_chunks_id_seq'::regclass))
 //   content: text (not null)
-//   metadata: jsonb (not null)
+//   metadata: jsonb (not null, default: '{}'::jsonb)
 //   embedding: vector (nullable)
-//   created_at: timestamp with time zone (nullable, default: now())
-//   updated_at: timestamp with time zone (nullable, default: now())
+//   created_at: timestamp with time zone (not null, default: now())
+//   updated_at: timestamp with time zone (not null, default: now())
 //   id_condominio_interno: text (nullable)
 //   id_condominio_externo: text (nullable)
 //   nome_condominio: text (nullable)
-//   chunk_id: text (nullable)
-//   hash: text (nullable)
+//   documento_id: uuid (nullable)
 //   pagina: integer (nullable)
 //   chunk_index: integer (nullable)
 //   char_count: integer (nullable)
 //   processado_em: timestamp with time zone (nullable)
-//   documento_id: uuid (nullable)
+//   hash: text (nullable)
 // Table: convencoes_documentos
 //   id: uuid (not null, default: gen_random_uuid())
 //   id_condominio_externo: text (not null)
@@ -666,6 +664,14 @@ export const Constants = {
 //   Policy "authenticated_update_condominios" (UPDATE, PERMISSIVE) roles={authenticated}
 //     USING: true
 //     WITH CHECK: true
+// Table: convencoes_chunks
+//   Policy "service_role_all_chunks" (ALL, PERMISSIVE) roles={service_role}
+//     USING: true
+//     WITH CHECK: true
+// Table: convencoes_documentos
+//   Policy "service_role_all_documentos" (ALL, PERMISSIVE) roles={service_role}
+//     USING: true
+//     WITH CHECK: true
 // Table: historico_infracoes
 //   Policy "authenticated_delete_infracoes" (DELETE, PERMISSIVE) roles={authenticated}
 //     USING: true
@@ -710,13 +716,6 @@ export const Constants = {
 //   Policy "Users can view their own profile or admins view all" (SELECT, PERMISSIVE) roles={authenticated}
 //     USING: ((id = auth.uid()) OR (((auth.jwt() -> 'user_metadata'::text) ->> 'role'::text) = 'administrador'::text))
 
-// --- WARNING: TABLES WITH RLS ENABLED BUT NO POLICIES ---
-// These tables have Row Level Security enabled but NO policies defined.
-// This means ALL queries (SELECT, INSERT, UPDATE, DELETE) will return ZERO rows
-// for non-superuser roles (including the anon and authenticated roles used by the app).
-// You MUST create RLS policies for these tables to allow data access.
-//   - convencoes_chunks
-
 // --- DATABASE FUNCTIONS ---
 // FUNCTION handle_new_user()
 //   CREATE OR REPLACE FUNCTION public.handle_new_user()
@@ -738,23 +737,38 @@ export const Constants = {
 //   $function$
 //
 // FUNCTION match_documents(vector, integer, jsonb)
-//   CREATE OR REPLACE FUNCTION public.match_documents(query_embedding vector, match_count integer DEFAULT NULL::integer, filter jsonb DEFAULT '{}'::jsonb)
+//   CREATE OR REPLACE FUNCTION public.match_documents(query_embedding vector, match_count integer DEFAULT 10, filter jsonb DEFAULT '{}'::jsonb)
 //    RETURNS TABLE(id bigint, content text, metadata jsonb, similarity double precision)
 //    LANGUAGE plpgsql
 //   AS $function$
-//   #variable_conflict use_column
-//   begin
-//     return query
-//     select
-//       id,
-//       content,
-//       metadata,
-//       1 - (convencoes_chunks.embedding <=> query_embedding) as similarity
-//     from convencoes_chunks
-//     where metadata @> filter
-//     order by convencoes_chunks.embedding <=> query_embedding
-//     limit match_count;
-//   end;
+//   BEGIN
+//     RETURN QUERY
+//     SELECT
+//       cc.id,
+//       cc.content,
+//       cc.metadata,
+//       1 - (cc.embedding <=> query_embedding) AS similarity
+//     FROM convencoes_chunks cc
+//     WHERE
+//       cc.embedding IS NOT NULL
+//       AND (
+//         filter = '{}'::jsonb
+//         OR cc.metadata @> filter
+//       )
+//     ORDER BY cc.embedding <=> query_embedding
+//     LIMIT match_count;
+//   END;
+//   $function$
+//
+// FUNCTION update_updated_at()
+//   CREATE OR REPLACE FUNCTION public.update_updated_at()
+//    RETURNS trigger
+//    LANGUAGE plpgsql
+//   AS $function$
+//   BEGIN
+//     NEW.updated_at = now();
+//     RETURN NEW;
+//   END;
 //   $function$
 //
 // FUNCTION update_updated_at_column()
@@ -771,16 +785,14 @@ export const Constants = {
 
 // --- TRIGGERS ---
 // Table: convencoes_chunks
-//   update_convencoes_chunks_updated_at: CREATE TRIGGER update_convencoes_chunks_updated_at BEFORE UPDATE ON public.convencoes_chunks FOR EACH ROW EXECUTE FUNCTION update_updated_at_column()
+//   trg_chunks_updated_at: CREATE TRIGGER trg_chunks_updated_at BEFORE UPDATE ON public.convencoes_chunks FOR EACH ROW EXECUTE FUNCTION update_updated_at()
 
 // --- INDEXES ---
 // Table: convencoes_chunks
-//   CREATE INDEX idx_chunks_content_gin ON public.convencoes_chunks USING gin (to_tsvector('portuguese'::regconfig, content))
+//   CREATE INDEX idx_chunks_condo_externo ON public.convencoes_chunks USING btree (id_condominio_externo)
+//   CREATE INDEX idx_chunks_content_trgm ON public.convencoes_chunks USING gin (content gin_trgm_ops)
 //   CREATE INDEX idx_chunks_documento_id ON public.convencoes_chunks USING btree (documento_id)
-//   CREATE INDEX idx_chunks_embedding ON public.convencoes_chunks USING ivfflat (embedding vector_cosine_ops) WITH (lists='100')
-//   CREATE INDEX idx_condo_externo ON public.convencoes_chunks USING btree (id_condominio_externo)
-//   CREATE INDEX idx_convencoes_chunks_embedding_ivfflat ON public.convencoes_chunks USING ivfflat (embedding vector_cosine_ops) WITH (lists='100')
-//   CREATE INDEX idx_convencoes_chunks_metadata_gin ON public.convencoes_chunks USING gin (metadata)
+//   CREATE INDEX idx_chunks_embedding_hnsw ON public.convencoes_chunks USING hnsw (embedding vector_cosine_ops) WITH (m='16', ef_construction='64')
 //   CREATE UNIQUE INDEX uq_chunk_hash ON public.convencoes_chunks USING btree (hash)
 // Table: convencoes_documentos
 //   CREATE INDEX idx_docs_condo_externo ON public.convencoes_documentos USING btree (id_condominio_externo)
