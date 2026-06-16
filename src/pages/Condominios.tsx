@@ -264,12 +264,33 @@ export default function Condominios() {
     return `${month}/${day}/${year}`
   }
 
+  const getTodayString = () => {
+    const d = new Date()
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+  }
+
   const handleTriggerWebhook = async () => {
     if (!selectedCondominio) return
 
     if ((dataInicio && !dataFim) || (!dataInicio && dataFim)) {
       toast.error('Datas incompletas', {
         description: 'Por favor, preencha ambas as datas (Início e Fim) ou deixe ambas em branco.',
+      })
+      return
+    }
+
+    const todayStr = getTodayString()
+
+    if (dataInicio && dataInicio < todayStr) {
+      toast.error('Data inválida', {
+        description: 'A data de início não pode estar no passado.',
+      })
+      return
+    }
+
+    if (dataFim && dataFim < todayStr) {
+      toast.error('Data inválida', {
+        description: 'A data de fim não pode estar no passado.',
       })
       return
     }
@@ -517,6 +538,7 @@ export default function Condominios() {
                   <Input
                     id="dataInicio"
                     type="date"
+                    min={getTodayString()}
                     value={dataInicio}
                     onChange={(e) => setDataInicio(e.target.value)}
                   />
@@ -528,6 +550,7 @@ export default function Condominios() {
                   <Input
                     id="dataFim"
                     type="date"
+                    min={dataInicio || getTodayString()}
                     value={dataFim}
                     onChange={(e) => setDataFim(e.target.value)}
                   />

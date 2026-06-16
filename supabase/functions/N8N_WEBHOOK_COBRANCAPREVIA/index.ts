@@ -4,7 +4,8 @@ import { createClient } from 'jsr:@supabase/supabase-js@2'
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, x-supabase-client-platform, apikey, content-type',
+  'Access-Control-Allow-Headers':
+    'authorization, x-client-info, x-supabase-client-platform, apikey, content-type',
 }
 
 Deno.serve(async (req: Request) => {
@@ -58,11 +59,11 @@ Deno.serve(async (req: Request) => {
             Valor: `R$ ${(150 + i * 10).toFixed(2)}`,
             Vencimento: new Date().toLocaleDateString('pt-BR'),
             Telefone: `119999999${i.toString().padStart(2, '0')}`,
-          }))
+          })),
         }),
         {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        }
+        },
       )
     }
 
